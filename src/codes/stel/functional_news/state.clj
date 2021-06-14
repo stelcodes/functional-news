@@ -5,11 +5,7 @@
             [codes.stel.functional-news.util :refer [generate-username]]
             [slingshot.slingshot :refer [try+ throw+]]))
 
-(def datasource
-  (get-datasource {:dbtype "postgresql",
-                   :dbname "functional_news",
-                   :host "127.0.0.1",
-                   :port 5432}))
+(def datasource (get-datasource {:dbtype "postgresql", :dbname "functional_news", :host "127.0.0.1", :port 5432}))
 
 (defn try-db
   [db-fn & args]
@@ -19,71 +15,51 @@
         ;; See
         ;; https://mariapaktiti.com/handling-postgres-exceptions-with-clojure
         (catch java.sql.SQLException e (throw+ {:type :state/sql-exception}))
-        (catch Object _
-          ((error "Cannot connect to database")
-            (throw+ {:type :state/db-connection})))))
+        (catch Object _ ((error "Cannot connect to database") (throw+ {:type :state/db-connection})))))
 
 (defn find-user
   [id]
   (let [result (try-db query "SELECT * FROM users WHERE id = ?" id)]
-    (if (empty? result)
-      (throw+ {:type :state/empty-result, :id id})
-      (first result))))
+    (if (empty? result) (throw+ {:type :state/empty-result, :id id}) (first result))))
 
 (defn find-username
   [username]
   (let [result (try-db query "SELECT * FROM users WHERE name = ?" username)]
-    (if (empty? result)
-      (throw+ {:type :state/empty-result, :username username})
-      (first result))))
+    (if (empty? result) (throw+ {:type :state/empty-result, :username username}) (first result))))
 
 (defn create-user
   [email password]
-  (let
-    [username (loop [username (generate-username)]
-                (let [status (try ((find-username username) :taken)
-                                  (catch Exception _ :not-taken))]
-                  if
-                  (= status :not-taken)
-                  username
-                  (recur (generate-username))))
-     result
-       (try-db
-         execute!
-         "INSERT INTO users (name, email, password) VALUES (?, ?, crypt(?, gen_salt('bf', 8))) RETURNING *"
-         username
-         email
-         password)]
+  (let [username (loop [username (generate-username)]
+                   (let [status (try ((find-username username) :taken) (catch Exception _ :not-taken))]
+                     if
+                     (= status :not-taken)
+                     username
+                     (recur (generate-username))))
+        result (try-db
+                 execute!
+                 "INSERT INTO users (name, email, password) VALUES (?, ?, crypt(?, gen_salt('bf', 8))) RETURNING *"
+                 username
+                 email
+                 password)]
     (first result)))
 
 (defn auth-user
   [email password]
-  (let
-    [result
-       (try-db
-         query
-         "SELECT * FROM users WHERE email = ? AND password = crypt(?, password)"
-         email
-         password)]
+  (let [result (try-db query "SELECT * FROM users WHERE email = ? AND password = crypt(?, password)" email password)]
     (if (empty? result) (throw+ {:type :state/auth-failure}) (first result))))
 
 (defn create-submission
   [title url user-id]
-  (let
-    [submission
-       (try-db
-         execute-one!
-         "INSERT INTO submissions (title, url, userid) VALUES (?, ?, ?) RETURNING *"
-         title
-         url
-         user-id)
-     submission-id (:submissions/id submission)
-     _upvote
-       (try-db
-         execute!
-         "INSERT INTO upvotes (userid, submissionid) VALUES (?, ?) RETURNING *"
-         user-id
-         submission-id)]
+  (let [submission (try-db execute-one!
+                           "INSERT INTO submissions (title, url, userid) VALUES (?, ?, ?) RETURNING *"
+                           title
+                           url
+                           user-id)
+        submission-id (:submissions/id submission)
+        _upvote (try-db execute!
+                        "INSERT INTO upvotes (userid, submissionid) VALUES (?, ?) RETURNING *"
+                        user-id
+                        submission-id)]
     submission))
 
 (defn get-new-submissions
@@ -110,11 +86,7 @@
 
 (defn create-comment
   [user-id submission-id body]
-  (try-db execute!
-          "INSERT INTO comments (userid, submissionid, body) VALUES (?, ?, ?)"
-          user-id
-          submission-id
-          body))
+  (try-db execute! "INSERT INTO comments (userid, submissionid, body) VALUES (?, ?, ?)" user-id submission-id body))
 
 (defn find-comments
   [submission-id]
@@ -125,7 +97,4 @@
 
 (defn create-upvote
   [user-id submission-id]
-  (try-db execute!
-          "INSERT INTO upvotes (userid, submissionid) VALUES (?, ?)"
-          user-id
-          submission-id))
+  (try-db execute! "INSERT INTO upvotes (userid, submissionid) VALUES (?, ?)" user-id submission-id))

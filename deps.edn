@@ -1,26 +1,17 @@
-{:aliases
-   {:dev {:extra-deps {io.aviso/pretty {:mvn/version "0.1.37"}},
-          :extra-paths ["dev"]},
-    :format {:extra-deps {cljfmt/cljfmt {:mvn/version "0.6.4"}},
-             :main-opts ["-m" "cljfmt.main" "fix" "src" "test" "dev"
-                         "deps.edn"]},
-    :repl {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.2"},
-                        nrepl/nrepl {:mvn/version "0.8.3"}},
-           :main-opts ["-m" "nrepl.cmdline" "--middleware"
-                       "[cider.nrepl/cider-middleware]" "--interactive"]},
-    :runner {:extra-deps {com.cognitect/test-runner
-                            {:git/url
-                               "https://github.com/cognitect-labs/test-runner",
-                             :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}},
-             :main-opts ["-m" "cognitect.test-runner" "-d" "test"]},
-    :scss {:extra-deps {deraen/sass4clj {:mvn/version "0.5.1"}},
-           :main-opts ["-m" "sass4clj.main" "--auto" "--target-path"
-                       "resources/public" "--source-paths" "resources/scss"]},
-    :test {:extra-deps {org.clojure/test.check {:mvn/version "1.0.0"}},
-           :extra-paths ["test"]},
-    :uberjar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.128"}},
-              :main-opts ["-m" "hf.depstar.uberjar" "cuter-news.jar" "-C" "-m"
-                          "cuter-news.system"]}},
+{:aliases {:dev {:extra-deps {io.aviso/pretty {:mvn/version "0.1.37"}}, :extra-paths ["dev"]},
+           :format {:extra-deps {cljfmt/cljfmt {:mvn/version "0.6.4"}},
+                    :main-opts ["-m" "cljfmt.main" "fix" "src" "test" "dev" "deps.edn"]},
+           :repl {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.2"}, nrepl/nrepl {:mvn/version "0.8.3"}},
+                  :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]" "--interactive"]},
+           :runner {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner",
+                                                            :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}},
+                    :main-opts ["-m" "cognitect.test-runner" "-d" "test"]},
+           :scss {:extra-deps {deraen/sass4clj {:mvn/version "0.5.1"}},
+                  :main-opts ["-m" "sass4clj.main" "--auto" "--target-path" "resources/public" "--source-paths"
+                              "resources/scss"]},
+           :test {:extra-deps {org.clojure/test.check {:mvn/version "1.0.0"}}, :extra-paths ["test"]},
+           :uberjar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.128"}},
+                     :main-opts ["-m" "hf.depstar.uberjar" "cuter-news.jar" "-C" "-m" "cuter-news.system"]}},
  :deps {com.cemerick/url {:mvn/version "0.1.1"},
         com.taoensso/timbre {:mvn/version "5.1.2"},
         failjure/failjure {:mvn/version "2.0.0"},
