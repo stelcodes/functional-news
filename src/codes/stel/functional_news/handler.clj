@@ -128,16 +128,10 @@
                 (assoc context :request new-request))),
      :leave (fn [{:keys [response], :as context}] (assoc context :response (session-response response options)))}))
 
-(defn mock-asset-handler [_] (debug "Asset handler initiated") {:status 444, :body "Asset handler test"})
-
-(defn asset-handler
-  [request]
-  (debug "Asset handler initiated")
-  ((create-resource-handler {:root "public/assets"}) request))
-
 
 (def app-routes
-  [["/" {:handler hot-submissions-page-handler}] ["/assets/*" {:handler asset-handler}]
+  [["/" {:handler hot-submissions-page-handler}]
+   ["/assets/*" {:handler (create-resource-handler {:root "public/assets"})}]
    ["/new" {:handler new-submissions-page-handler}]
    ["/submit"
     {:get {:handler submit-page-handler},
