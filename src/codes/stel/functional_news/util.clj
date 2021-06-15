@@ -2,15 +2,20 @@
   (:require [clojure.string :refer [capitalize]]
             [cemerick.url :as url]))
 
-(def both [])
-(def adjectives
-  (concat both ["dynamic" "categorical" "monadic" "pure" "variadic" "impure" "effectful" "lazy" "reactive"]))
-(def nouns
-  (concat both
-          ["alligator" "crocodile" "spider" "flamingo" "lion" "bobcat" "kaola" "tiger" "gorilla" "iguana" "racoon"
-           "chipmunk" "sloth" "hedgehog" "bumblebee" "giraffe" "octopus" "tiger" "velicorapter"]))
+(def functional-jargon-adjectives
+  ["dynamic" "currying" "categorical" "isomorphic" "homoiconic" "endomorphic" "algebraic" "monadic" "pure" "variadic"
+   "impure" "effectful" "lazy" "reactive"])
 
-(defn generate-username [] (str (capitalize (rand-nth adjectives)) (capitalize (rand-nth nouns))))
+(def animal-nouns
+  ["alligator" "crocodile" "spider" "flamingo" "lion" "bobcat" "kaola" "tiger" "iguana" "racoon" "chipmunk" "sloth"
+   "hedgehog" "bumblebee" "giraffe" "octopus" "tiger" "velicorapter" "mudpuppy" "antelope" "jaguar" "panther" "lemur"
+   "badger" "tortoise" "toucan" "tapir" "springbok" "sturgeon" "beetle" "gecko" "llama" "macaw" "mongoose" "muskox"
+   "numbat" "ocelot" "oyster" "opossum" "otter" "butterfly" "vaquita" "wombat" "zebu" "zebra" "pelican" "peacock"
+   "quokka" "chameleon" "falcon" "oriole" "ibex" "jellyfish" "penguin"])
+
+(defn generate-username [] (str (capitalize (rand-nth functional-jargon-adjectives)) (capitalize (rand-nth animal-nouns))))
+
+(comment (generate-username))
 
 (defn parse-int [input] (Integer/parseInt input))
 
