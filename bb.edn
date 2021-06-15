@@ -16,4 +16,5 @@
                  :task (do (println (str "Backing up database: " db-name))
                            (println (str "Backup location: " backup-path))
                            (shell {:out backup-path} backup-command)
-                           (println "Backup successful! 🚀"))}}}
+                           (println "Backup successful! 🚀"))},
+         sass (shell "npx sass --watch resources/scss:resources/public/assets/css")}}

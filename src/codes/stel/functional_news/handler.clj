@@ -1,22 +1,21 @@
 (ns codes.stel.functional-news.handler
-  (:require
-    [reitit.ring :refer
-     [create-resource-handler routes redirect-trailing-slash-handler create-default-handler]]
-    [reitit.http :as http]
-    [taoensso.timbre :refer [spy debug log warn error]]
-    [reitit.http.coercion :refer [coerce-request-interceptor coerce-response-interceptor coerce-exceptions-interceptor]]
-    [reitit.coercion.malli]
-    [ring.util.response :refer [redirect bad-request]]
-    [codes.stel.functional-news.views :as views]
-    [codes.stel.functional-news.state :as state]
-    [codes.stel.functional-news.util :refer [validate-url]]
-    [slingshot.slingshot :refer [try+ throw+]]
-    [ring.middleware.session :refer [session-request session-response]]
-    [ring.middleware.session.cookie :refer [cookie-store]]
-    [reitit.http.interceptors.muuntaja :refer [format-interceptor]]
-    [reitit.spec :as rspec]
-    [reitit.dev.pretty :as pretty]
-    [reitit.interceptor.sieppari :as sieppari]))
+  (:require [reitit.ring :refer [create-resource-handler routes redirect-trailing-slash-handler create-default-handler]]
+            [reitit.http :as http]
+            [taoensso.timbre :refer [spy debug log warn error]]
+            [reitit.http.coercion :refer
+             [coerce-request-interceptor coerce-response-interceptor coerce-exceptions-interceptor]]
+            [reitit.coercion.malli]
+            [ring.util.response :refer [redirect bad-request]]
+            [codes.stel.functional-news.views :as views]
+            [codes.stel.functional-news.state :as state]
+            [codes.stel.functional-news.util :refer [validate-url]]
+            [slingshot.slingshot :refer [try+ throw+]]
+            [ring.middleware.session :refer [session-request session-response]]
+            [ring.middleware.session.cookie :refer [cookie-store]]
+            [reitit.http.interceptors.muuntaja :refer [format-interceptor]]
+            [reitit.spec :as rspec]
+            [reitit.dev.pretty :as pretty]
+            [reitit.interceptor.sieppari :as sieppari]))
 
 ;; Helper functions
 
@@ -129,8 +128,16 @@
                 (assoc context :request new-request))),
      :leave (fn [{:keys [response], :as context}] (assoc context :response (session-response response options)))}))
 
+(defn mock-asset-handler [_] (debug "Asset handler initiated") {:status 444, :body "Asset handler test"})
+
+(defn asset-handler
+  [request]
+  (debug "Asset handler initiated")
+  ((create-resource-handler {:root "public/assets"}) request))
+
+
 (def app-routes
-  [["/" {:handler hot-submissions-page-handler}] ["/assets/*" {:handler (create-resource-handler)}]
+  [["/" {:handler hot-submissions-page-handler}] ["/assets/*" {:handler asset-handler}]
    ["/new" {:handler new-submissions-page-handler}]
    ["/submit"
     {:get {:handler submit-page-handler},
@@ -161,7 +168,7 @@
     (routes (redirect-trailing-slash-handler)
             (create-default-handler {:not-found (constantly {:status 404, :body "Not found :("}),
                                      :method-not-allowed (constantly {:status 405, :body "Method not allowed :("})}))
-    {:interceptors [ (format-interceptor) (coerce-request-interceptor) session-interceptor (coerce-response-interceptor)
+    {:interceptors [(format-interceptor) (coerce-request-interceptor) session-interceptor (coerce-response-interceptor)
                     (coerce-exceptions-interceptor)],
      :executor sieppari/executor}))
 

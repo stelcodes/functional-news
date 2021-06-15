@@ -30,4 +30,3 @@
   (info (str "Listening for requests on port " port))
   (reset! server (run-server #'app {:port port})))
 
-(defn reset [] (stop-server) (refresh) (start-server))

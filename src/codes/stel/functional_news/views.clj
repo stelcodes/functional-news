@@ -3,6 +3,7 @@
             [hiccup2.core :refer [html]]
             [hiccup.element :as he]
             [hiccup.form :as hf]
+            [taoensso.timbre :refer [spy debug log warn error]]
             [cemerick.url :as cu]))
 
 (defn layout
@@ -21,12 +22,15 @@
             [:body content])
       (str)))
 
+(defn unordered-list [coll] [:ul (for [x (remove nil? coll)] [:li x])])
+
 (defn nav
   ([] (nav nil))
   ([user]
+   (debug (str "nav view - user:" (type user)))
    [:nav
-    (he/unordered-list [(he/link-to "/" "hot") (he/link-to "/new" "new") (he/link-to "/submit" "submit")
-                        (when user (he/link-to "/login" "login") (he/link-to "/logout" "logout"))])]))
+    (unordered-list [(he/link-to "/" "hot") (he/link-to "/new" "new") nil nil (he/link-to "/submit" "submit")
+                     (if user (he/link-to "/logout" "logout") (he/link-to "/login" "login"))])]))
 
 (defn header
   ([] (header nil))
