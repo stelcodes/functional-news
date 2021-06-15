@@ -1,2 +1,4 @@
 .nrepl-port
 /.sass-cache
+/.cpcache
+/.clj-kondo/.cache
