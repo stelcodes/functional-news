@@ -1,6 +1,5 @@
 (ns codes.stel.functional-news.util
   (:require [clojure.string :refer [capitalize]]
-            [failjure.core :as f]
             [cemerick.url :as url]))
 
 (def both [])
@@ -13,7 +12,7 @@
 
 (defn generate-username [] (str (capitalize (rand-nth adjectives)) (capitalize (rand-nth nouns))))
 
-(defn parse-int [input] (f/try* (Integer/parseInt input)))
+(defn parse-int [input] (Integer/parseInt input))
 
 (defn validate-url [url] ((url/url url)))
 

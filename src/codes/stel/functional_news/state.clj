@@ -5,7 +5,9 @@
             [codes.stel.functional-news.util :refer [generate-username]]
             [slingshot.slingshot :refer [try+ throw+]]))
 
-(def datasource (get-datasource {:dbtype "postgresql", :dbname "functional_news", :host "127.0.0.1", :port 5432}))
+(def datasource
+  (get-datasource
+    {:dbtype "postgresql", :dbname "functional_news", :user "functional_news_app", :host "127.0.0.1", :port 5432}))
 
 (defn try-db
   [db-fn & args]
@@ -31,10 +33,7 @@
   [email password]
   (let [username (loop [username (generate-username)]
                    (let [status (try ((find-username username) :taken) (catch Exception _ :not-taken))]
-                     if
-                     (= status :not-taken)
-                     username
-                     (recur (generate-username))))
+                     (if (= status :not-taken) username (recur (generate-username)))))
         result (try-db
                  execute!
                  "INSERT INTO users (name, email, password) VALUES (?, ?, crypt(?, gen_salt('bf', 8))) RETURNING *"

@@ -15,7 +15,7 @@
              (when (= (System/getenv "PROD") "true")
                [:script
                 {:src "https://plausible.io/js/plausible.js",
-                 :data-domain "cuter-news.stel.codes",
+                 :data-domain "functional-news.stel.codes",
                  :defer "defer",
                  :async "async"}])]
             [:body content])
@@ -34,8 +34,10 @@
    (let [username (:users/name user)
          username-text (when username (str "logged in as " username " ^-^"))]
      [:header
-      (he/link-to {:class "logo-text"} "/" (he/image {:class "logo"} "/assets/cuter-news-logo.svg" "cuter news"))
-      (nav user) (when username-text [:div.username-text username-text])])))
+      (he/link-to {:class "logo-text"}
+                  "/"
+                  (he/image {:class "logo"} "/assets/functional-news-logo.svg" "functional news")) (nav user)
+      (when username-text [:div.username-text username-text])])))
 
 (defn upvote-panel
   [submission-id upvote-count]

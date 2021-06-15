@@ -1,23 +1,21 @@
 (ns codes.stel.functional-news.handler
-  (:require [reitit.ring :refer
-             [ring-handler router create-resource-handler routes redirect-trailing-slash-handler
-              create-default-handler]]
-            [ring.util.response :refer [redirect bad-request]]
-            [codes.stel-functional-news.views :as views]
-            [codes.stel-functional-news.state :as state]
-            [codes.stel-functional-news.util :refer [validate-url]]
-            [muuntaja.core :as muuntaja]
-            [slingshot.slingshot :refer [try+ throw+]]
-            [reitit.ring.middleware.muuntaja :refer [format-middleware]]
-            [reitit.ring.middleware.parameters :refer [parameters-middleware]]
-            [reitit.ring.coercion :refer [coerce-exceptions-middleware coerce-request-middleware]]
-            [reitit.coercion.schema]
-            [ring.middleware.session :refer [wrap-session]]
-            [ring.middleware.session.cookie :refer [cookie-store]]
-            [reitit.spec :refer [validate]]
-            [reitit.dev.pretty :refer [exception]]
-            [reitit.interceptor.sieppari :as sieppari]
-            [schema.core :as s]))
+  (:require
+    [reitit.ring :refer
+     [ring-handler router create-resource-handler routes redirect-trailing-slash-handler create-default-handler]]
+    [reitit.http :as http]
+    [taoensso.timbre :refer [spy debug log warn error]]
+    [reitit.http.coercion :refer [coerce-request-interceptor coerce-response-interceptor coerce-exceptions-interceptor]]
+    [reitit.coercion.malli]
+    [ring.util.response :refer [redirect bad-request]]
+    [codes.stel.functional-news.views :as views]
+    [codes.stel.functional-news.state :as state]
+    [codes.stel.functional-news.util :refer [validate-url]]
+    [slingshot.slingshot :refer [try+ throw+]]
+    [ring.middleware.session :refer [wrap-session session-request session-response]]
+    [ring.middleware.session.cookie :refer [cookie-store]]
+    [reitit.spec :as rspec]
+    [reitit.dev.pretty :as pretty]
+    [reitit.interceptor.sieppari :as sieppari]))
 
 ;; Helper functions
 
@@ -33,33 +31,27 @@
 ;; GET request handler functions
 
 (defn hot-submissions-page-handler
-  [request]
-  (let [submissions (state/get-hot-submissions)
-        user (cookie-user request)]
-    (good-html-response (views/submission-list user submissions))))
+  [{:keys [user], :as request}]
+  (let [submissions (state/get-hot-submissions)] (good-html-response (views/submission-list user submissions))))
 
 (defn new-submissions-page-handler
-  [request]
-  (let [submissions (state/get-new-submissions)
-        user (cookie-user request)]
-    (good-html-response (views/submission-list user submissions))))
+  [{:keys [user], :as request}]
+  (let [submissions (state/get-new-submissions)] (good-html-response (views/submission-list user submissions))))
 
 (defn login-page-handler [_request] (good-html-response (views/login-page)))
 
 (defn submit-page-handler
-  [request]
-  (let [user (cookie-user request)]
-    (if user (good-html-response (views/submit-page user nil)) (redirect "/login" :see-other))))
+  [{:keys [user], :as request}]
+  (if user (good-html-response (views/submit-page user nil)) (redirect "/login" :see-other)))
 
 (defn submission-page-handler
   "TODO: let cookie-user exception bubble up"
-  [request]
-  (try+ (let [user (cookie-user request)
-              submission-id (get-in request [:parameters :path :id])
+  [{:keys [user], :as request}]
+  (try+ (let [submission-id (get-in request [:parameters :path :id])
               submission (state/find-submission submission-id)
               comments (state/find-comments submission-id)]
-          (good-html-response (views/submission-page user submission comments))
-          (catch Object _ (bad-html-response (views/not-found user))))))
+          (good-html-response (views/submission-page user submission comments)))
+        (catch Object _ (bad-html-response (views/not-found user)))))
 
 ;; POST request handler functions
 
@@ -84,80 +76,92 @@
 
 
 (defn create-submission-handler
-  [request]
-  (let [user (atom nil)]
-    (try (let [user-id (get-in request [:session :id])
-               _ (swap! user (state/find-user user-id))
-               title (get-in request [:parameters :form :title])
-               url (get-in request [:parameters :form :url])
-               _ (validate-url url)
-               submission (state/create-submission title url user-id)
-               submission-id (:submissions/id submission)]
-           (redirect (str "/submissions/" submission-id) :see-other))
-         (catch Exception e (bad-request (views/submit-page @user (.getMessage e)))))))
+  [{:keys [user], :as request}]
+  (try (let [user-id (get-in request [:session :id])
+             title (get-in request [:parameters :form :title])
+             url (get-in request [:parameters :form :url])
+             _ (validate-url url)
+             submission (state/create-submission title url user-id)
+             submission-id (:submissions/id submission)]
+         (redirect (str "/submissions/" submission-id) :see-other))
+       (catch Exception e (bad-request (views/submit-page user (.getMessage e))))))
 
 (defn logout-handler [_request] (assoc (redirect "/") :session nil))
 
 (defn upvote-handler
   [request]
-  (try (let [submission-id (get-in request [:parameters :path :id])
-             user-id (get-in request [:session :id])
-             _ (state/find-user user-id)
-             location (get-in request [:headers "referer"])
-             _ (state/create-upvote user-id submission-id)]
-         (redirect location :see-other))
-       (catch Object _ (redirect "/login" :see-other))))
+  (try+ (let [submission-id (get-in request [:parameters :path :id])
+              user-id (get-in request [:session :id])
+              _ (state/find-user user-id)
+              location (get-in request [:headers "referer"])
+              _ (state/create-upvote user-id submission-id)]
+          (redirect location :see-other))
+        (catch Object _ (redirect "/login" :see-other))))
 
 (defn signup-handler
   [request]
-  (try (let [email (get-in request [:parameters :form :email])
-             password (get-in request [:parameters :form :password])
-             result (state/create-user email password)
-             session-body {:id (:users/id result)}]
-         (assoc (redirect "/" :see-other) :session session-body))
-       (catch Object _ (bad-request (views/login-page {:signup "That email is already taken ;-;"})))))
+  (try+ (let [email (get-in request [:parameters :form :email])
+              password (get-in request [:parameters :form :password])
+              result (state/create-user email password)
+              session-body {:id (:users/id result)}]
+          (assoc (redirect "/" :see-other) :session session-body))
+        (catch Object _ (bad-request (views/login-page {:signup "That email is already taken ;-;"})))))
 
-(def session-middleware
-  {:name ::session,
-   :compile (fn [_route-data _opts]
-              (let [cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop"))]
-                (fn [handler]
-                  (wrap-session handler {:store (cookie-store {:key cookie-key}), :cookie-name "cuternewscookie"}))))})
+; (def session-middleware
+;   {:name ::session,
+;    :compile (fn [_route-data _opts]
+;               (let [cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop"))]
+;                 (fn [handler]
+;                   (wrap-session handler {:store (cookie-store {:key cookie-key}), :cookie-name
+;                   "cuternewscookie"}))))})
+
+; (def cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop")))
+
+(def session-interceptor
+  (let [cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop"))
+        options {:store (cookie-store {:key cookie-key}), :cookie-name "functional-news-cookie"}]
+    {:enter (fn [{:keys [request], :as context}]
+              (let [new-request (session-request request options)
+                    user-id (get-in new-request [:session :body :id])
+                    user (when user-id (try (state/find-user user-id) (catch Object _ nil)))
+                    new-request (assoc new-request :user user)]
+                (assoc context :request new-request))),
+     :leave (fn [{:keys [response], :as context}] (assoc context :response (session-response response options)))}))
 
 (def app-routes
   [["/" {:handler hot-submissions-page-handler}] ["/assets/*" (create-resource-handler)]
    ["/new" {:handler new-submissions-page-handler}]
    ["/submit"
     {:get {:handler submit-page-handler},
-     :post {:handler create-submission-handler, :parameters {:form {:title s/Str, :url s/Str}}}}]
+     :post {:handler create-submission-handler, :parameters {:form [:map [:title string? :url string?]]}}}]
    ["/logout" {:get {:handler logout-handler}}]
-   ["/submissions/:id" {:handler submission-page-handler, :parameters {:path {:id s/Int}}}]
-   ["/upvote/:id" {:get {:name ::upvote, :handler upvote-handler, :parameters {:path {:id s/Int}}}}]
+   ["/submissions/:id" {:handler submission-page-handler, :parameters {:path [:map [:id int?]]}}]
+   ["/upvote/:id" {:get {:name ::upvote, :handler upvote-handler, :parameters {:path [:map [:id int?]]}}}]
    ["/login"
     {:get {:handler login-page-handler},
-     :post
-       {:name ::authorize-user, :handler authorize-user-handler, :parameters {:form {:email s/Str, :password s/Str}}}}]
-   ["/signup" {:post {:name ::signup, :handler signup-handler, :parameters {:form {:email s/Str, :password s/Str}}}}]
+     :post {:name ::authorize-user,
+            :handler authorize-user-handler,
+            :parameters {:form [:map [:email string? :password string?]]}}}]
+   ["/signup"
+    {:post {:name ::signup, :handler signup-handler, :parameters {:form [:map [:email string? :password string?]]}}}]
    ["/comments"
     {:post {:handler create-comment-handler,
             :name ::create-comment,
-            :parameters {:form {:submission-id s/Int, :body s/Str}}}}]])
+            :parameters {:form [:map [:submission-id int? :body string?]]}}}]])
 
 (def router-options
-  {:validate validate,
-   :exception exception,
-   :data {:coercion reitit.coercion.schema/coercion,
-          :muuntaja muuntaja/instance,
-          :middleware [format-middleware parameters-middleware coerce-exceptions-middleware
-                       coerce-request-middleware]}})
+  {:validate rspec/validate, :exception pretty/exception, :coercion reitit.coercion.malli/coercion, :data {}})
+;; :middleware [format-middleware parameters-middleware coerce-exceptions-middleware
+;;             coerce-request-middleware]
 
-(defn app
-  []
-  (ring-handler (router app-routes router-options)
-                (routes (redirect-trailing-slash-handler)
-                        (create-default-handler {:not-found (constantly {:status 404, :body "Not found :("}),
-                                                 :method-not-allowed (constantly {:status 405,
-                                                                                  :body "Method not allowed :("})}))
-                {:middleware [session-middleware]}))
+(def app
+  (http/ring-handler
+    (http/router app-routes router-options)
+    (routes (redirect-trailing-slash-handler)
+            (create-default-handler {:not-found (constantly {:status 404, :body "Not found :("}),
+                                     :method-not-allowed (constantly {:status 405, :body "Method not allowed :("})}))
+    {:interceptors [(coerce-request-interceptor) session-interceptor (coerce-response-interceptor)
+                    (coerce-exceptions-interceptor)],
+     :executor sieppari/executor}))
 
 
