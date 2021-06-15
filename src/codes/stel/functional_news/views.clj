@@ -97,7 +97,7 @@
         username (:users/name submission)
         age (:age submission)
         upvotecount (:upvotecount submission)]
-    (layout (str title " | Cuter News")
+    (layout (str title " | Functional News")
             (header user)
             [:main
              [:div.submission-body (upvote-panel id upvotecount)
@@ -118,9 +118,9 @@
           (footer)))
 
 (defn login-page
+  "message is a map with optional :login and :signup keys"
   ([] (login-page {}))
   ([message]
-   "message is a map with optional :login and :signup keys"
    (let [login-message (or (:login message) "Log in to submit links, comment, and up-paw! ^-^*")
          signup-message (:signup message)]
      (layout "Login | Cuter News"
