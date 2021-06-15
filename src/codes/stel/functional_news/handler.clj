@@ -13,8 +13,11 @@
             [ring.middleware.session :refer [session-request session-response]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [reitit.http.interceptors.muuntaja :refer [format-interceptor]]
+            [reitit.http.interceptors.parameters :refer [parameters-interceptor]]
+            [reitit.http.interceptors.multipart :refer [multipart-interceptor]]
             [reitit.spec :as rspec]
             [reitit.dev.pretty :as pretty]
+            [clojure.pprint :refer [pprint]]
             [reitit.interceptor.sieppari :as sieppari]))
 
 ;; Helper functions
@@ -57,8 +60,8 @@
 
 (defn authorize-user-handler
   [request]
-  (try+ (let [email (get-in request [:params "email"])
-              password (get-in request [:params "password"])
+  (try+ (let [email (get-in request [:parameters :form :email])
+              password (get-in request [:parameters :form :password])
               user (state/auth-user email password)
               session-body {:id (:users/id user)}]
           (assoc (redirect "/" :see-other) :session session-body))
@@ -105,7 +108,9 @@
               result (state/create-user email password)
               session-body {:id (:users/id result)}]
           (assoc (redirect "/" :see-other) :session session-body))
-        (catch Object _ (bad-request (views/login-page {:signup "That email is already taken ;-;"})))))
+        (catch Object _
+          (debug "Signup Handler Exception - " (:cause &throw-context))
+          (bad-request (views/login-page {:signup "That email is already taken ;-;"})))))
 
 ; (def session-middleware
 ;   {:name ::session,
@@ -117,16 +122,36 @@
 
 ; (def cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop")))
 
+(defn pp [val] (with-out-str (pprint val)))
+
 (def session-interceptor
   (let [cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop"))
         options {:store (cookie-store {:key cookie-key}), :cookie-name "functional-news-cookie"}]
     {:enter (fn [{:keys [request], :as context}]
               (let [new-request (session-request request options)
-                    user-id (get-in new-request [:session :body :id])
-                    user (when user-id (try (state/find-user user-id) (catch Object _ nil)))
+                    user-id (get-in new-request [:session :id])
+                    user (when user-id (try (state/find-user user-id) (catch Exception _ nil)))
                     new-request (assoc new-request :user user)]
                 (assoc context :request new-request))),
-     :leave (fn [{:keys [response], :as context}] (assoc context :response (session-response response options)))}))
+     :leave (fn [{:keys [response request], :as context}]
+              (assoc context :response (session-response response request options)))}))
+
+(def debug-interceptor
+  {:enter (fn [{:keys [request], :as context}]
+            (debug "📫" (str (:request-method request)) ": " (:uri request))
+            (when-not (re-find #"^.*\.(jpg|png|gif|svg|ico|css|js)$" (:uri request))
+              (let [keep-keys [:session :request-method :headers :scheme :user :body :path-params :query-string
+                               :server-name :uri :character-encoding :content-type :query-params :websocket?
+                               :form-params :content-length :server-port :parameters :params :cookies :remote-addr]
+                    filtered-request (select-keys request keep-keys)
+                    sorted-request (into (sorted-map) filtered-request)]
+                (debug "\n==================="
+                       "\nREQUEST INTERCEPTOR 🐞\n"
+                       (with-out-str (pprint sorted-request))
+                       "===================")))
+            context)})
+
+(def error-interceptor {:error (fn [context] {:status 501, :body ()})})
 
 
 (def app-routes
@@ -135,7 +160,7 @@
    ["/new" {:handler new-submissions-page-handler}]
    ["/submit"
     {:get {:handler submit-page-handler},
-     :post {:handler create-submission-handler, :parameters {:form [:map [:title string? :url string?]]}}}]
+     :post {:handler create-submission-handler, :parameters {:form [:map [:title string?] [:url string?]]}}}]
    ["/logout" {:get {:handler logout-handler}}]
    ["/submissions/:id" {:handler submission-page-handler, :parameters {:path [:map [:id int?]]}}]
    ["/upvote/:id" {:get {:name ::upvote, :handler upvote-handler, :parameters {:path [:map [:id int?]]}}}]
@@ -143,18 +168,21 @@
     {:get {:handler login-page-handler},
      :post {:name ::authorize-user,
             :handler authorize-user-handler,
-            :parameters {:form [:map [:email string? :password string?]]}}}]
+            :parameters {:form [:map [:email string?] [:password string?]]}}}]
    ["/signup"
-    {:post {:name ::signup, :handler signup-handler, :parameters {:form [:map [:email string? :password string?]]}}}]
+    {:post {:name ::signup, :handler signup-handler, :parameters {:form [:map [:email string?] [:password string?]]}}}]
    ["/comments"
     {:post {:handler create-comment-handler,
             :name ::create-comment,
-            :parameters {:form [:map [:submission-id int? :body string?]]}}}]])
+            :parameters {:form [:map [:submission-id int?] [:body string?]]}}}]])
+
+(comment
+  (string? "hi"))
 
 (def router-options
-  {:validate rspec/validate, :exception pretty/exception, :coercion reitit.coercion.malli/coercion, :data {}})
+  {:validate rspec/validate, :exception pretty/exception, :data {:coercion reitit.coercion.malli/coercion}})
 ;; :middleware [format-middleware parameters-middleware coerce-exceptions-middleware
-;;             coerce-request-middleware]
+;;             coerce-request-middleware]d
 
 (def app
   (http/ring-handler
@@ -162,7 +190,8 @@
     (routes (redirect-trailing-slash-handler)
             (create-default-handler {:not-found (constantly {:status 404, :body "Not found :("}),
                                      :method-not-allowed (constantly {:status 405, :body "Method not allowed :("})}))
-    {:interceptors [(format-interceptor) (coerce-request-interceptor) session-interceptor (coerce-response-interceptor)
+    {:interceptors [(format-interceptor) (parameters-interceptor) (multipart-interceptor) session-interceptor
+                    (coerce-request-interceptor) debug-interceptor (coerce-response-interceptor)
                     (coerce-exceptions-interceptor)],
      :executor sieppari/executor}))
 

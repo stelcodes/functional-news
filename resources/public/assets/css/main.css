@@ -151,15 +151,22 @@ body {
 }
 body header {
   grid-area: header;
-  background-color: #D4FDFB;
+  background-color: #6f9cd6;
+}
+body header .logo {
+  display: inline-block;
+  margin: 0.2rem;
+  padding: 0.2rem;
+  border: 5px solid black;
 }
 body header .username-text {
-  background-color: #FCD7F0;
+  background-color: #babdc2;
   padding: 0.5em;
 }
 body header nav {
+  display: inline-block;
   margin-bottom: 1rem;
-  margin-left: 1rem;
+  margin-left: 0.5rem;
 }
 body header nav ul {
   display: flex;
@@ -167,10 +174,10 @@ body header nav ul {
 }
 body header nav ul li a {
   padding: 0 0.5em;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 body header nav ul li:not(:last-child) {
-  border-right: 2px solid #3A3261;
+  border-right: 1px solid #3A3261;
 }
 body main {
   grid-area: center;

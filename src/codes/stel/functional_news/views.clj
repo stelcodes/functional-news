@@ -12,7 +12,7 @@
             [:head [:title title] [:meta {:charset "utf-8"}] [:meta {:http-equiv "X-UA-Compatible", :content "IE=edge"}]
              [:meta {:name "viewport", :content "width=device-width, initial-scale=1.0"}]
              [:link {:rel "shortcut icon", :href "/assets/favicon.ico", :type "image/x-icon"}]
-             (hp/include-css "/assets/minireset.css") (hp/include-css "/assets/css/main.css")
+             (hp/include-css "/assets/css/main.css")
              (when (= (System/getenv "PROD") "true")
                [:script
                 {:src "https://plausible.io/js/plausible.js",
@@ -27,7 +27,6 @@
 (defn nav
   ([] (nav nil))
   ([user]
-   (debug (str "nav view - user:" (type user)))
    [:nav
     (unordered-list [(he/link-to "/" "hot") (he/link-to "/new" "new") nil nil (he/link-to "/submit" "submit")
                      (if user (he/link-to "/logout" "logout") (he/link-to "/login" "login"))])]))
@@ -37,10 +36,7 @@
   ([user]
    (let [username (:users/name user)
          username-text (when username (str "logged in as " username " ^-^"))]
-     [:header
-      (he/link-to {:class "logo-text"}
-                  "/"
-                  (he/image {:class "logo"} "/assets/functional-news-logo.svg" "functional news")) (nav user)
+     [:header (he/link-to {:class "logo"} "/" [:span "λn"]) (nav user)
       (when username-text [:div.username-text username-text])])))
 
 (defn upvote-panel
@@ -121,7 +117,7 @@
   "message is a map with optional :login and :signup keys"
   ([] (login-page {}))
   ([message]
-   (let [login-message (or (:login message) "Log in to submit links, comment, and up-paw! ^-^*")
+   (let [login-message (or (:login message) "Log in to submit links, comment, and upvote!")
          signup-message (:signup message)]
      (layout "Login | Cuter News"
              (header)

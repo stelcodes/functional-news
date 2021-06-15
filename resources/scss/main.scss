@@ -67,23 +67,30 @@ body {
 	font-family: Andale Mono, monospace;
   header {
     grid-area: header;
-    background-color: #D4FDFB;
+    background-color: #6f9cd6;
+    .logo {
+      display: inline-block;
+      margin: .2rem;
+      padding: .2rem;
+      border: 5px solid black;
+    }
     .username-text {
-      background-color: #FCD7F0;
+      background-color: #babdc2;
       padding: .5em;
     }
     nav {
+      display: inline-block;
       margin-bottom: 1rem;
-      margin-left: 1rem;
+      margin-left: 0.5rem;
       ul {
       display: flex;
       flex-flow: row wrap;
       li a {
         padding: 0 .5em;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
       }
       li:not(:last-child) {
-        border-right: 2px solid #3A3261;
+        border-right: 1px solid #3A3261;
       }
       }
     }

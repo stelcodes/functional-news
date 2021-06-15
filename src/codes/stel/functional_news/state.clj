@@ -12,11 +12,10 @@
 (defn try-db
   [db-fn & args]
   (try+ (db-fn datasource (vec args))
-        ;; I could add more catch clauses here for different types of postgres
-        ;; errors
+        ;; I could add more catch clauses here for different types of postgres errors
         ;; See
         ;; https://mariapaktiti.com/handling-postgres-exceptions-with-clojure
-        (catch java.sql.SQLException e (throw+ {:type :state/sql-exception}))
+        (catch java.sql.SQLException _ (throw+ {:type :state/sql-exception}))
         (catch Object _ ((error "Cannot connect to database") (throw+ {:type :state/db-connection})))))
 
 (defn find-user

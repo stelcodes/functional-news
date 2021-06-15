@@ -3,8 +3,8 @@
             [cemerick.url :as url]))
 
 (def functional-jargon-adjectives
-  ["dynamic" "currying" "categorical" "isomorphic" "homoiconic" "endomorphic" "algebraic" "monadic" "pure" "variadic"
-   "impure" "effectful" "lazy" "reactive"])
+  ["dynamic" "currying" "categorical" "isomorphic" "homoiconic" "declaritive" "dataDriven" "endomorphic" "algebraic"
+   "monadic" "stateful" "variadic" "effectful" "lazy" "reactive"])
 
 (def animal-nouns
   ["alligator" "crocodile" "spider" "flamingo" "lion" "bobcat" "kaola" "tiger" "iguana" "racoon" "chipmunk" "sloth"
@@ -13,9 +13,12 @@
    "numbat" "ocelot" "oyster" "opossum" "otter" "butterfly" "vaquita" "wombat" "zebu" "zebra" "pelican" "peacock"
    "quokka" "chameleon" "falcon" "oriole" "ibex" "jellyfish" "penguin"])
 
-(defn generate-username [] (str (capitalize (rand-nth functional-jargon-adjectives)) (capitalize (rand-nth animal-nouns))))
+(defn generate-username
+  []
+  (str (capitalize (rand-nth functional-jargon-adjectives)) (capitalize (rand-nth animal-nouns))))
 
-(comment (generate-username))
+(comment
+  (generate-username))
 
 (defn parse-int [input] (Integer/parseInt input))
 
