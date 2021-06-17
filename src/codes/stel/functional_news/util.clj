@@ -22,5 +22,5 @@
 
 (defn parse-int [input] (Integer/parseInt input))
 
-(defn validate-url [url] ((url/url url)))
+(defn validate-url [url] (try (url/url url) (catch Exception e (throw (ex-info "Invalid url" {:type :invalid-url} e)))))
 

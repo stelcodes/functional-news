@@ -151,28 +151,40 @@ body {
 }
 body header {
   grid-area: header;
+  display: grid;
+  grid-template-areas: "logo nav username";
+  grid-template-columns: max-content 1fr max-content;
+  align-items: center;
   background-color: #6f9cd6;
+  padding: 0.5rem 0.5rem;
+}
+@media (max-width: 600px) {
+  body header {
+    grid-template-areas: "logo nav nav" "logo username username";
+  }
 }
 body header .logo {
+  grid-area: logo;
   display: inline-block;
   margin: 0.2rem;
   padding: 0.2rem;
   border: 5px solid black;
 }
 body header .username-text {
-  background-color: #babdc2;
-  padding: 0.5em;
+  grid-area: username;
+  padding-left: 1rem;
+  font-size: 0.9rem;
 }
 body header nav {
-  display: inline-block;
-  margin-bottom: 1rem;
+  grid-area: nav;
+  align-self: center;
   margin-left: 0.5rem;
 }
-body header nav ul {
-  display: flex;
-  flex-flow: row wrap;
+body header nav ul li {
+  display: inline-block;
 }
 body header nav ul li a {
+  display: inline-block;
   padding: 0 0.5em;
   font-size: 1.1rem;
 }
@@ -184,7 +196,7 @@ body main {
 }
 body footer {
   grid-area: footer;
-  background-color: #faf9fa;
+  background-color: #e0e0e0;
   display: grid;
   justify-items: start;
   align-items: center;

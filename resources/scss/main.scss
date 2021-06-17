@@ -67,25 +67,42 @@ body {
 	font-family: Andale Mono, monospace;
   header {
     grid-area: header;
+    display: grid;
+    grid-template-areas:
+    "logo nav username";
+    @media (max-width: 600px) {
+    grid-template-areas:
+    "logo nav nav"
+    "logo username username";
+    }
+    grid-template-columns: max-content 1fr max-content;
+    align-items: center;
     background-color: #6f9cd6;
+    padding: .5rem .5rem;
     .logo {
+      grid-area: logo;
       display: inline-block;
       margin: .2rem;
       padding: .2rem;
       border: 5px solid black;
     }
     .username-text {
-      background-color: #babdc2;
-      padding: .5em;
+      grid-area: username;
+      padding-left: 1rem;
+      font-size: 0.9rem;
     }
     nav {
-      display: inline-block;
-      margin-bottom: 1rem;
+      grid-area: nav;
+      align-self: center;
       margin-left: 0.5rem;
       ul {
-      display: flex;
-      flex-flow: row wrap;
+      // display: flex;
+      // flex-flow: row wrap;
+      li {
+        display: inline-block;
+      }
       li a {
+        display: inline-block;
         padding: 0 .5em;
         font-size: 1.1rem;
       }
@@ -101,7 +118,7 @@ body {
 
   footer {
     grid-area: footer;
-    background-color: #faf9fa;
+    background-color: #e0e0e0;
     display: grid;
     justify-items: start;
     align-items: center;

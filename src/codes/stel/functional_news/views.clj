@@ -35,7 +35,7 @@
   ([] (header nil))
   ([user]
    (let [username (:users/name user)
-         username-text (when username (str "logged in as " username " ^-^"))]
+         username-text (when username (str username "(1)"))]
      [:header (he/link-to {:class "logo"} "/" [:span "λn"]) (nav user)
       (when username-text [:div.username-text username-text])])))
 
@@ -93,7 +93,7 @@
         username (:users/name submission)
         age (:age submission)
         upvotecount (:upvotecount submission)]
-    (layout (str title " | Functional News")
+    (layout (str title " | λn")
             (header user)
             [:main
              [:div.submission-body (upvote-panel id upvotecount)
@@ -108,7 +108,7 @@
 
 (defn submission-list
   [user submissions]
-  (layout "Submissions | Cuter News"
+  (layout "Submissions | λn"
           (header user)
           [:main [:div.submission-list (map submission-list-item submissions)]]
           (footer)))
@@ -119,7 +119,7 @@
   ([message]
    (let [login-message (or (:login message) "Log in to submit links, comment, and upvote!")
          signup-message (:signup message)]
-     (layout "Login | Cuter News"
+     (layout "Login | λn"
              (header)
              [:main [:p.form-message login-message]
               (hf/form-to {:class "login-form"}
@@ -141,7 +141,7 @@
 
 (defn submit-page
   [user message]
-  (layout "Submit | Cuter News"
+  (layout "Submit | λn"
           (header user)
           [:main (when message [:p message])
            (hf/form-to {:class "submit-form"}
@@ -152,5 +152,5 @@
                        (hf/text-field {:placeholder "https://nyan.cat"} "url")
                        (hf/submit-button {:class "submit-button"} "submit"))]))
 
-(defn not-found [user] (layout "Not Found | Cuter News" (header user) [:main [:h1 "Page not found :("]] (footer)))
+(defn not-found [user] (layout "Not Found | λn" (header user) [:main [:h1 "Page not found :("]] (footer)))
 
