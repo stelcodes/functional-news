@@ -143,7 +143,7 @@ img.logo {
 body {
   min-height: 100vh;
   display: grid;
-  grid-template-rows: min-content 1fr 66px;
+  grid-template-rows: min-content 1fr max-content;
   grid-template-columns: 1fr minmax(min-content, 100%) 1fr;
   grid-template-areas: "header header header" "left center right" "footer footer footer";
   background-color: white;
@@ -198,9 +198,21 @@ body footer {
   grid-area: footer;
   background-color: #e0e0e0;
   display: grid;
-  justify-items: start;
   align-items: center;
-  padding: 0 1rem;
+  grid-template-columns: max-content 1fr;
+  padding: 1rem 1rem;
+}
+body footer .avatar {
+  display: inline-block;
+  width: 100px;
+  border-radius: 10%;
+}
+body footer .self-promotion {
+  display: inline-block;
+}
+body footer .self-promotion .introduction {
+  font-weight: 600;
+  padding-bottom: 0.5rem;
 }
 
 .submission-list {

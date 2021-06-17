@@ -82,7 +82,11 @@
   [:div.comment-item [:p.comment-header (str (:users/name comment) " " (created-string (:age comment)))]
    [:p (:comments/body comment)]])
 
-(defn footer [] [:footer [:p "made with clojure in michigan 💖"]])
+(defn footer
+  []
+  [:footer (he/image {:class "avatar"} "https://s3.stel.codes/avatar.png")
+   [:div.self-promotion [:p.introduction "Hi! I'm Stel Abrego, and I created λn (functional news)"]
+    [:p "Thanks for checking it out! I used Clojure, Postgres, and SCSS"]]])
 
 (defn submission-page
   [user submission comments]
