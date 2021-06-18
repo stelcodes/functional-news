@@ -26,8 +26,17 @@
 
 (defn find-user
   [id]
-  (let [result (try-db query "SELECT * FROM users WHERE id = ?" id)]
-    (if (empty? result) (throw (ex-empty-result)) (first result))))
+  (let
+    [user-result (try-db query "SELECT * FROM users WHERE id = ?" id)
+     score-result
+       (try-db
+         query
+         "SELECT COUNT(upvotes.id) AS score FROM upvotes JOIN submissions ON upvotes.submissionid = submissions.id WHERE submissions.userid = ?"
+         id)]
+    (if (empty? user-result) (throw (ex-empty-result)) (merge (first user-result) (first score-result)))))
+
+(comment
+  (find-user 24))
 
 (defn find-username
   [username]

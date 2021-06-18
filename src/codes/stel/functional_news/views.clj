@@ -1,8 +1,9 @@
 (ns codes.stel.functional-news.views
   (:require [hiccup.page :as hp]
-            [hiccup2.core :refer [html]]
+            [hiccup2.core :refer [html raw]]
             [hiccup.element :as he]
             [hiccup.form :as hf]
+            [clojure.java.io :as io]
             [taoensso.timbre :refer [spy debug log warn error]]
             [cemerick.url :as cu]))
 
@@ -35,14 +36,17 @@
   ([] (header nil))
   ([user]
    (let [username (:users/name user)
-         username-text (when username (str username "(1)"))]
+         username-text (when username (str username "(" (:score user) ")"))]
      [:header (he/link-to {:class "logo"} "/" [:span "λn"]) (nav user)
       (when username-text [:div.username-text username-text])])))
 
 (defn upvote-panel
   [submission-id upvote-count]
-  [:div.love-panel (he/link-to (str "/upvote/" submission-id) (he/image "/assets/love.svg"))
+  [:div.love-panel (he/link-to (str "/upvote/" submission-id) (raw (slurp (clojure.java.io/resource "svg/love.svg"))))
    (when upvote-count [:span (str upvote-count)])])
+
+(comment
+  (slurp (clojure.java.io/resource "svg/love.svg")))
 
 (defn created-string
   "Takes age in minutes and returns 'created _ minutes ago' OR 'created _ hours ago'"
@@ -73,7 +77,7 @@
         submission-url (str "submissions/" id)
         comment-count (:commentcount submission)]
     [:div.submission-list-item (upvote-panel id upvotecount)
-     [:div.submission-header (he/link-to {:class "submission-title"} url title) [:p.submission-host host]
+     [:div.submission-header (he/link-to {:class "submission-title"} url title) [:p.submission-host (str "@ " host)]
       [:p (str "by " username " " (created-string age) " | ")
        (he/link-to submission-url (comment-string comment-count))]]]))
 
@@ -85,8 +89,11 @@
 (defn footer
   []
   [:footer (he/image {:class "avatar"} "https://s3.stel.codes/avatar.png")
-   [:div.self-promotion [:p.introduction "Hi! I'm Stel Abrego, and I created λn (functional news)"]
-    [:p "Thanks for checking it out! I used Clojure, Postgres, and SCSS"]]])
+   [:div.self-promotion [:p.introduction "Hi! I'm Stel Abrego, and I created this web app: λn (functional news)"]
+    [:p.explanation "Thanks for checking it out! I used Clojure, SCSS, Postgres, and NixOS"]
+    [:p "My Dev Blog + Resume 👉 " (he/link-to "https://stel.codes" "stel.codes")]
+    [:p "My Twitter Feed 👉 " (he/link-to "https://twitter.com/stelstuff" "@stelstuff")]
+    [:p "My Github Projects 👉 " (he/link-to "https://github.com/stelcodes" "@stelcodes")]]])
 
 (defn submission-page
   [user submission comments]

@@ -88,6 +88,12 @@ a, a:visited, a:hover {
 /* multiple element rules */
 a {
   color: black;
+  text-decoration: underline;
+}
+
+a:hover {
+  background-color: rgba(200, 200, 200, 0.4);
+  text-decoration: underline;
 }
 
 input {
@@ -125,7 +131,6 @@ img.logo {
 
 .submission-host {
   color: grey;
-  font-size: 1em;
 }
 
 .love-panel {
@@ -133,10 +138,16 @@ img.logo {
   flex-flow: column nowrap;
   align-items: center;
   font-family: monospace;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
 }
-.love-panel img {
-  width: 75px;
+.love-panel a:hover {
+  background-color: initial;
+}
+.love-panel a:hover svg {
+  fill: pink;
+}
+.love-panel span {
+  line-height: 80%;
 }
 
 /* structural rules*/
@@ -146,7 +157,7 @@ body {
   grid-template-rows: min-content 1fr max-content;
   grid-template-columns: 1fr minmax(min-content, 100%) 1fr;
   grid-template-areas: "header header header" "left center right" "footer footer footer";
-  background-color: white;
+  background-color: #f0f0f0;
   font-family: Andale Mono, monospace;
 }
 body header {
@@ -162,6 +173,9 @@ body header {
   body header {
     grid-template-areas: "logo nav nav" "logo username username";
   }
+}
+body header * {
+  text-decoration: none;
 }
 body header .logo {
   grid-area: logo;
@@ -201,6 +215,7 @@ body footer {
   align-items: center;
   grid-template-columns: max-content 1fr;
   padding: 1rem 1rem;
+  font-size: 0.9rem;
 }
 body footer .avatar {
   display: inline-block;
@@ -209,10 +224,14 @@ body footer .avatar {
 }
 body footer .self-promotion {
   display: inline-block;
+  margin-left: 1rem;
 }
 body footer .self-promotion .introduction {
   font-weight: 600;
   padding-bottom: 0.5rem;
+}
+body footer .self-promotion .explanation {
+  padding-bottom: 0.3rem;
 }
 
 .submission-list {
@@ -228,10 +247,15 @@ body footer .self-promotion .introduction {
   padding: 0.5rem;
 }
 .submission-list .submission-list-item .submission-title {
-  font-size: 1.3em;
+  font-size: 1.1em;
 }
 .submission-list .submission-list-item .submission-header {
   padding: 0 0.5rem;
+}
+.submission-list .submission-list-item .submission-host {
+  font-size: 1rem;
+  display: inline-block;
+  margin-left: 1rem;
 }
 
 .submission-body {
