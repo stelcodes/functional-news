@@ -77,7 +77,8 @@
         submission-url (str "submissions/" id)
         comment-count (:commentcount submission)]
     [:div.submission-list-item (upvote-panel id upvotecount)
-     [:div.submission-header (he/link-to {:class "submission-title"} url title) [:p.submission-host (str "@ " host)]
+     [:div.submission-header (he/link-to {:class "submission-title", :target "_blank"} url title)
+      [:p.submission-host (str "@ " host)]
       [:p (str "by " username " " (created-string age) " | ")
        (he/link-to submission-url (comment-string comment-count))]]]))
 
@@ -108,8 +109,8 @@
             (header user)
             [:main
              [:div.submission-body (upvote-panel id upvotecount)
-              [:div.submission-header (he/link-to {:class "submission-title"} url title) [:p.submission-host host]
-               [:p (str "by " username " " (created-string age))]]
+              [:div.submission-header (he/link-to {:class "submission-title", :target "_blank"} url title)
+               [:p.submission-host host] [:p (str "by " username " " (created-string age))]]
               (hf/form-to [:post "/comments"]
                           (hf/hidden-field "submission-id" id)
                           (hf/text-area "body")
