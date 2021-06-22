@@ -81,13 +81,13 @@
   []
   (try-db
     query
-    "SELECT submissions.id, submissions.title, submissions.url, submissions.created, minutes_age(submissions.created) AS age, users.name, c.commentcount, u.upvotecount FROM submissions JOIN users ON submissions.userid = users.id LEFT JOIN (SELECT comments.submissionid, COUNT(comments.id) AS commentcount FROM comments GROUP BY comments.submissionid) AS c ON c.submissionid = submissions.id LEFT JOIN (SELECT upvotes.submissionid, COUNT(upvotes.id) AS upvotecount FROM upvotes GROUP BY upvotes.submissionid) AS u ON u.submissionid = submissions.id ORDER BY submissions.created DESC LIMIT 30"))
+    "SELECT submissions.id, submissions.title, submissions.url, submissions.created, minutes_age(submissions.created) AS age, users.name, c.commentcount, u.upvotecount FROM submissions JOIN users ON submissions.userid = users.id LEFT JOIN (SELECT comments.submissionid, COUNT(comments.id) AS commentcount FROM comments GROUP BY comments.submissionid) AS c ON c.submissionid = submissions.id LEFT JOIN (SELECT upvotes.submissionid, COUNT(upvotes.id) AS upvotecount FROM upvotes GROUP BY upvotes.submissionid) AS u ON u.submissionid = submissions.id ORDER BY submissions.created DESC LIMIT 60"))
 
 (defn get-hot-submissions
   []
   (try-db
     query
-    "SELECT submissions.id, submissions.title, submissions.url, submissions.created, minutes_age(submissions.created) AS age, users.name, c.commentcount, u.upvotecount FROM submissions JOIN users ON submissions.userid = users.id LEFT JOIN (SELECT comments.submissionid, COUNT(comments.id) AS commentcount FROM comments GROUP BY comments.submissionid) AS c ON c.submissionid = submissions.id LEFT JOIN (SELECT upvotes.submissionid, COUNT(upvotes.id) AS upvotecount FROM upvotes GROUP BY upvotes.submissionid) AS u ON u.submissionid = submissions.id ORDER BY hotness(u.upvotecount, minutes_age(submissions.created)) DESC LIMIT 30;"))
+    "SELECT submissions.id, submissions.title, submissions.url, submissions.created, minutes_age(submissions.created) AS age, users.name, c.commentcount, u.upvotecount FROM submissions JOIN users ON submissions.userid = users.id LEFT JOIN (SELECT comments.submissionid, COUNT(comments.id) AS commentcount FROM comments GROUP BY comments.submissionid) AS c ON c.submissionid = submissions.id LEFT JOIN (SELECT upvotes.submissionid, COUNT(upvotes.id) AS upvotecount FROM upvotes GROUP BY upvotes.submissionid) AS u ON u.submissionid = submissions.id ORDER BY hotness(u.upvotecount, minutes_age(submissions.created)) DESC LIMIT 60;"))
 
 (defn find-submission
   [id]
