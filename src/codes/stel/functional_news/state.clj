@@ -2,8 +2,7 @@
   (:require [next.jdbc.sql :refer [query]]
             [next.jdbc :refer [get-datasource execute! execute-one!]]
             [taoensso.timbre :refer [log warn error]]
-            [codes.stel.functional-news.util :refer [generate-username]]
-            [slingshot.slingshot :refer [try+ throw+]]))
+            [codes.stel.functional-news.util :refer [generate-username]]))
 
 (def datasource
   (get-datasource
