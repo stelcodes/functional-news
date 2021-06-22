@@ -17,4 +17,6 @@
                            (println (str "Backup location: " backup-path))
                            (shell {:out backup-path} backup-command)
                            (println "Backup successful! 🚀"))},
-         sass (shell "npx sass --watch resources/scss:resources/public/assets/css")}}
+         sass (shell "npx sass --watch resources/scss:resources/public/assets/css"),
+         repl (shell "rlwrap clojure -M:repl"),
+         db {:depends [db-name], :task (shell (str "psql " db-name))}}}
