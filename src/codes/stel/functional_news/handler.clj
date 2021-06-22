@@ -9,7 +9,6 @@
             [codes.stel.functional-news.views :as views]
             [codes.stel.functional-news.state :as state]
             [codes.stel.functional-news.util :refer [validate-url]]
-            [slingshot.slingshot :refer [try+ throw+]]
             [ring.middleware.session :refer [session-request session-response]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [reitit.http.interceptors.muuntaja :refer [format-interceptor]]
@@ -20,17 +19,16 @@
             [clojure.pprint :refer [pprint]]
             [reitit.interceptor.sieppari :as sieppari]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions
-
-(defn cookie-user
-  [request]
-  (when-let [user-id (get-in request [:session :id])]
-    (try+ (state/find-user user-id) (throw+ {:type :handler/invalid-cookie}))))
 
 (defn good-html-response [body] {:status 200, :content-type "text/html", :body body})
 
 (defn bad-html-response [body] {:status 400, :content-type "text/html", :body body})
 
+(defn error-page-handler [{:keys [user]}] (bad-html-response (views/not-found user)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GET request handler functions
 
 (defn hot-submissions-page-handler
@@ -48,35 +46,34 @@
   (if user (good-html-response (views/submit-page user nil)) (redirect "/login" :see-other)))
 
 (defn submission-page-handler
-  "TODO: let cookie-user exception bubble up"
   [{:keys [user], :as request}]
-  (try+ (let [submission-id (get-in request [:parameters :path :id])
-              submission (state/find-submission submission-id)
-              comments (state/find-comments submission-id)]
-          (good-html-response (views/submission-page user submission comments)))
-        (catch Object _ (bad-html-response (views/not-found user)))))
+  (try (let [submission-id (get-in request [:parameters :path :id])
+             submission (state/find-submission submission-id)
+             comments (state/find-comments submission-id)]
+         (good-html-response (views/submission-page user submission comments)))
+       (catch Exception _ (error-page-handler request))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; POST request handler functions
 
 (defn authorize-user-handler
   [request]
-  (try+ (let [email (get-in request [:parameters :form :email])
-              password (get-in request [:parameters :form :password])
-              user (state/auth-user email password)
-              session-body {:id (:users/id user)}]
-          (assoc (redirect "/" :see-other) :session session-body))
-        (catch Object _
-          (bad-html-response (views/login-page {:login "We didn't recognize that email password combination ;-;"})))))
+  (try (let [email (get-in request [:parameters :form :email])
+             password (get-in request [:parameters :form :password])
+             user (state/auth-user email password)
+             session-body {:id (:users/id user)}]
+         (assoc (redirect "/" :see-other) :session session-body))
+       (catch Exception _
+         (bad-html-response (views/login-page {:login "We didn't recognize that email password combination ;-;"})))))
 
 (defn create-comment-handler
   [request]
-  (try+ (let [user-id (get-in request [:session :id])
-              submission-id (get-in request [:parameters :form :submission-id])
-              body (get-in request [:parameters :form :body])
-              _result (state/create-comment user-id submission-id body)]
-          (redirect (str "/submissions/" submission-id) :see-other))
-        (catch Object _ (redirect "/login" :see-other))))
-
+  (try (let [user-id (get-in request [:session :id])
+             submission-id (get-in request [:parameters :form :submission-id])
+             body (get-in request [:parameters :form :body])
+             _result (state/create-comment user-id submission-id body)]
+         (redirect (str "/submissions/" submission-id) :see-other))
+       (catch Exception _ (redirect "/login" :see-other))))
 
 (defn create-submission-handler
   [{:keys [user], :as request}]
@@ -92,37 +89,45 @@
 (defn logout-handler [_request] (assoc (redirect "/") :session nil))
 
 (defn upvote-handler
-  [request]
-  (try+ (let [submission-id (get-in request [:parameters :path :id])
-              user-id (get-in request [:session :id])
-              _ (state/find-user user-id)
-              location (get-in request [:headers "referer"])
-              _ (state/create-upvote user-id submission-id)]
-          (redirect location :see-other))
-        (catch Object _ (redirect "/login" :see-other))))
+  [{:keys [user], :as request}]
+  (if-not user
+    (redirect "/login" :see-other)
+    (try (let [submission-id (get-in request [:parameters :path :id])
+               user-id (get-in request [:session :id])
+               location (get-in request [:headers "referer"])
+               _ (state/create-upvote user-id submission-id)]
+           (redirect location :see-other))
+         (catch Exception _ (redirect "/" :see-other)))))
+
+(defn validate-email
+  [email]
+  (if (re-matches #".+\@.+\..+" email)
+    email
+    (throw (ex-info "Email address must have @ and . characters" {:email email}))))
+
+(defn validate-password
+  [password]
+  (let [length (count password)]
+    (if (> length 7) password (throw (ex-info "Password must be 8 characters or more" {})))))
 
 (defn signup-handler
   [request]
-  (try+ (let [email (get-in request [:parameters :form :email])
-              password (get-in request [:parameters :form :password])
-              result (state/create-user email password)
-              session-body {:id (:users/id result)}]
-          (assoc (redirect "/" :see-other) :session session-body))
-        (catch Object _
-          (debug "Signup Handler Exception - " (:cause &throw-context))
-          (bad-request (views/login-page {:signup "That email is already taken ;-;"})))))
+  (try (let [email (get-in request [:parameters :form :email])
+             password (get-in request [:parameters :form :password])
+             _ (validate-email email)
+             _ (validate-password password)
+             result (state/create-user email password)
+             session-body {:id (:users/id result)}]
+         (assoc (redirect "/" :see-other) :session session-body))
+       (catch Exception e
+         (debug "Signup Handler Exception - " e)
+         (bad-request (views/login-page {:signup (.getMessage e)})))))
 
-; (def session-middleware
-;   {:name ::session,
-;    :compile (fn [_route-data _opts]
-;               (let [cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop"))]
-;                 (fn [handler]
-;                   (wrap-session handler {:store (cookie-store {:key cookie-key}), :cookie-name
-;                   "cuternewscookie"}))))})
-
-; (def cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop")))
 
 (defn pp [val] (with-out-str (pprint val)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Interceptors
 
 (def session-interceptor
   (let [cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop"))
@@ -138,20 +143,25 @@
 
 (def debug-interceptor
   {:enter (fn [{:keys [request], :as context}]
-            (debug "📫" (str (:request-method request)) ": " (:uri request))
+            (debug "\n📫" (str (:request-method request)) (:uri request))
             (when-not (re-find #"^.*\.(jpg|png|gif|svg|ico|css|js)$" (:uri request))
               (let [keep-keys [:session :request-method :headers :scheme :user :body :path-params :query-string
                                :server-name :uri :character-encoding :content-type :query-params :websocket?
                                :form-params :content-length :server-port :parameters :params :cookies :remote-addr]
                     filtered-request (select-keys request keep-keys)
                     sorted-request (into (sorted-map) filtered-request)]
-                (debug "\n==================="
-                       "\nREQUEST INTERCEPTOR 🐞\n"
+                (debug "\n================================================"
+                       "\n🐞 REQUEST INTERCEPTOR\n"
                        (with-out-str (pprint sorted-request))
-                       "===================")))
+                       "================================================")))
             context)})
 
-(def error-interceptor {:error (fn [context] {:status 501, :body ()})})
+(def error-interceptor
+  {:error (fn [{:keys [request error], :as context}]
+            (debug error)
+            (assoc context
+              :error nil
+              :response (error-page-handler request)))})
 
 
 (def app-routes
@@ -181,18 +191,17 @@
 
 (def router-options
   {:validate rspec/validate, :exception pretty/exception, :data {:coercion reitit.coercion.malli/coercion}})
-;; :middleware [format-middleware parameters-middleware coerce-exceptions-middleware
-;;             coerce-request-middleware]d
+
 
 (def app
-  (http/ring-handler
-    (http/router app-routes router-options)
-    (routes (redirect-trailing-slash-handler)
-            (create-default-handler {:not-found (constantly {:status 404, :body "Not found :("}),
-                                     :method-not-allowed (constantly {:status 405, :body "Method not allowed :("})}))
-    {:interceptors [(format-interceptor) (parameters-interceptor) (multipart-interceptor) session-interceptor
-                    (coerce-request-interceptor) debug-interceptor (coerce-response-interceptor)
-                    (coerce-exceptions-interceptor)],
-     :executor sieppari/executor}))
+  (http/ring-handler (http/router app-routes router-options)
+                     (routes (redirect-trailing-slash-handler)
+                             (create-default-handler {:not-found error-page-handler,
+                                                      :method-not-allowed error-page-handler,
+                                                      :not-acceptable error-page-handler}))
+                     {:interceptors [error-interceptor (format-interceptor) (parameters-interceptor)
+                                     (multipart-interceptor) session-interceptor (coerce-request-interceptor)
+                                     debug-interceptor (coerce-response-interceptor) #_(coerce-exceptions-interceptor)],
+                      :executor sieppari/executor}))
 
 
