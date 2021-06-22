@@ -92,9 +92,9 @@
   [:footer (he/image {:class "avatar"} "https://s3.stel.codes/avatar.png")
    [:div.self-promotion [:p.introduction "Hi! I'm Stel Abrego, and I created this web app: λn (functional news)"]
     [:p.explanation "Thanks for checking it out! I used Clojure, SCSS, Postgres, and NixOS"]
-    [:p "My Dev Blog + Resume 👉 " (he/link-to "https://stel.codes" "stel.codes")]
-    [:p "My Twitter Feed 👉 " (he/link-to "https://twitter.com/stelstuff" "@stelstuff")]
-    [:p "My Github Projects 👉 " (he/link-to "https://github.com/stelcodes" "@stelcodes")]]])
+    [:p "My developer blog + resume 👉 " (he/link-to "https://stel.codes" "stel.codes")]
+    [:p "My thought stream 👉 " (he/link-to "https://twitter.com/stelstuff" "twitter.com/stelstuff")]
+    [:p "My open source projects 👉 " (he/link-to "https://github.com/stelcodes" "github.com/stelcodes")]]])
 
 (defn submission-page
   [user submission comments]
@@ -113,7 +113,7 @@
                [:p.submission-host host] [:p (str "by " username " " (created-string age))]]
               (hf/form-to [:post "/comments"]
                           (hf/hidden-field "submission-id" id)
-                          (hf/text-area "body")
+                          (hf/text-area {:cols 100, :rows 10} "body")
                           (hf/submit-button {:class "submit-button"} "add comment"))
               [:div.submission-comments (map comment-item comments)]]]
             (footer))))
@@ -126,14 +126,15 @@
           (footer)))
 
 (defn login-page
-  "message is a map with optional :login and :signup keys"
+  "error is a map with optional :login and :signup keys"
   ([] (login-page {}))
-  ([message]
-   (let [login-message (or (:login message) "Log in to submit links, comment, and upvote!")
-         signup-message (:signup message)]
+  ([error]
+   (let [login-error (:login error)
+         signup-error (:signup error)]
      (layout "Login | λn"
              (header)
-             [:main [:p.form-message login-message]
+             [:main [:p.form-message "Log in to submit links, comment, and upvote!"]
+              (when login-error (list [:br] [:p.form-error "⛔ " login-error]))
               (hf/form-to {:class "login-form"}
                           [:post "/login"]
                           (hf/label "email" "email")
@@ -141,7 +142,8 @@
                           (hf/label "password" "password")
                           (hf/password-field "password")
                           (hf/submit-button {:class "submit-button"} "login"))
-              (when signup-message [:p.form-message signup-message])
+              [:p.form-message "Signup here! Password must be > 8 characters"]
+              (when signup-error (list [:br] [:p.form-error "⛔ " signup-error]))
               (hf/form-to {:class "signup-form"}
                           [:post "/signup"]
                           (hf/label "email" "email")
@@ -152,17 +154,28 @@
              (footer)))))
 
 (defn submit-page
-  [user message]
-  (layout "Submit | λn"
-          (header user)
-          [:main (when message [:p message])
-           (hf/form-to {:class "submit-form"}
-                       [:post "/submit"]
-                       (hf/label "title" "title")
-                       (hf/text-field {:placeholder "Is it 2010 again?"} "title")
-                       (hf/label "url" "link")
-                       (hf/text-field {:placeholder "https://nyan.cat"} "url")
-                       (hf/submit-button {:class "submit-button"} "submit"))]))
+  [user error]
+  (layout
+    "Submit | λn"
+    (header user)
+    [:main (when error [:p.form-error "⛔ " error])
+     (hf/form-to {:class "submit-form"}
+                 [:post "/submit"]
+                 (hf/label "title" "Title")
+                 (hf/text-field {:placeholder "NixOS 21.05 \"Okapi\" Released", :size 80} "title")
+                 (hf/label "url" "URL")
+                 (hf/text-field {:placeholder
+                                   "https://9to5linux.com/nixos-21-05-released-with-gnome-40-and-linux-kernel-5-10-lts",
+                                 :size 80}
+                                "url")
+                 (hf/submit-button {:class "submit-button"} "submit"))]))
 
-(defn not-found [user] (layout "Not Found | λn" (header user) [:main [:h1 "Page not found :("]] (footer)))
-
+(defn not-found
+  ([] (not-found nil))
+  ([user]
+   (layout "404 | λn"
+           (header user)
+           [:main
+            [:div.error-page-message [:h1 "404"]
+             [:p "Something went wrong. Please check the URL and try again. Sorry about that!"]]]
+           (footer))))
