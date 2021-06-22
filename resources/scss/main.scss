@@ -34,9 +34,14 @@ form {
 .form-message {
   margin: 1rem 0;
   padding: .5rem .5rem;
-  background-color: black;
-  color: white;
+  background-color: #e0e0e0;
+  color: black;
   display: inline-block;
+}
+
+.form-error {
+  @extend .form-message;
+  background-color: #ffa6a6;
 }
 
 img.logo {
@@ -46,6 +51,11 @@ img.logo {
 
 .submission-host {
 	color: grey;
+}
+
+.error-page-message {
+  text-align: center;
+  margin-top: 1rem;
 }
 
 .love-panel {
@@ -167,10 +177,11 @@ body {
     display: grid;
     grid-template-columns: 50px minmax(min-content, max-content);
     border-top: 1px solid #dfdfdf;
-    align-items: center;
+    align-items: start;
     padding: .5rem;
     .submission-title {
       font-size: 1.1em;
+      margin-right: 1rem;
     }
     .submission-header {
         padding: 0 .5rem;
@@ -178,14 +189,16 @@ body {
     .submission-host {
       font-size: 1rem;
       display: inline-block;
-      margin-left: 1rem;
+    }
+    .love-panel {
+      margin-top: 0.3rem;
     }
   }
 }
 
 .submission-body {
   display:grid;
-  grid-template-columns: 50px minmax(min-content, max-content) 1fr;
+  grid-template-columns: 50px max-content 1fr;
   grid-template-areas:
     "left upvote right"
     "left header right"
@@ -200,6 +213,8 @@ body {
   }
   .love-panel {
     grid-area: left;
+    font-size: 1.3rem;
+    margin-top: 0.5rem;
   }
   .submission-header {
     grid-area: header;
@@ -225,8 +240,11 @@ body {
     .love-panel {
       grid-area: upvote;
       flex-flow: row nowrap;
-      font-size: 2rem;
-      margin-right: 1rem;
+      margin-bottom: 0.5rem;
+      margin-left: 0.5rem;
+      svg {
+        margin-right: 0.5rem;
+      }
     }
   }
 }

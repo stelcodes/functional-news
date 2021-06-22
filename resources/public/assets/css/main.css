@@ -116,12 +116,16 @@ form {
   margin-top: 1em;
 }
 
-.form-message {
+.form-message, .form-error {
   margin: 1rem 0;
   padding: 0.5rem 0.5rem;
-  background-color: black;
-  color: white;
+  background-color: #e0e0e0;
+  color: black;
   display: inline-block;
+}
+
+.form-error {
+  background-color: #ffa6a6;
 }
 
 img.logo {
@@ -131,6 +135,11 @@ img.logo {
 
 .submission-host {
   color: grey;
+}
+
+.error-page-message {
+  text-align: center;
+  margin-top: 1rem;
 }
 
 .love-panel {
@@ -243,11 +252,12 @@ body footer .self-promotion .explanation {
   display: grid;
   grid-template-columns: 50px minmax(min-content, max-content);
   border-top: 1px solid #dfdfdf;
-  align-items: center;
+  align-items: start;
   padding: 0.5rem;
 }
 .submission-list .submission-list-item .submission-title {
   font-size: 1.1em;
+  margin-right: 1rem;
 }
 .submission-list .submission-list-item .submission-header {
   padding: 0 0.5rem;
@@ -255,12 +265,14 @@ body footer .self-promotion .explanation {
 .submission-list .submission-list-item .submission-host {
   font-size: 1rem;
   display: inline-block;
-  margin-left: 1rem;
+}
+.submission-list .submission-list-item .love-panel {
+  margin-top: 0.3rem;
 }
 
 .submission-body {
   display: grid;
-  grid-template-columns: 50px minmax(min-content, max-content) 1fr;
+  grid-template-columns: 50px max-content 1fr;
   grid-template-areas: "left upvote right" "left header right" "left form right" "left comments right";
   padding: 1rem;
 }
@@ -272,6 +284,8 @@ body footer .self-promotion .explanation {
 }
 .submission-body .love-panel {
   grid-area: left;
+  font-size: 1.3rem;
+  margin-top: 0.5rem;
 }
 .submission-body .submission-header {
   grid-area: header;
@@ -297,8 +311,11 @@ body footer .self-promotion .explanation {
   .submission-body .love-panel {
     grid-area: upvote;
     flex-flow: row nowrap;
-    font-size: 2rem;
-    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0.5rem;
+  }
+  .submission-body .love-panel svg {
+    margin-right: 0.5rem;
   }
 }
 
