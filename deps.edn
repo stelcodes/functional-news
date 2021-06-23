@@ -1,5 +1,4 @@
-{:aliases {:dev {:extra-deps {io.aviso/pretty {:mvn/version "0.1.37"}}, :extra-paths ["dev"]},
-           :format {:extra-deps {cljfmt/cljfmt {:mvn/version "0.6.4"}},
+{:aliases {:format {:extra-deps {cljfmt/cljfmt {:mvn/version "0.6.4"}},
                     :main-opts ["-m" "cljfmt.main" "fix" "src" "test" "dev" "deps.edn"]},
            :jar {:exec-args {:aot false,
                              :artifact-id "functional-news",
@@ -19,7 +18,7 @@
            :scss {:extra-deps {deraen/sass4clj {:mvn/version "0.5.1"}},
                   :main-opts ["-m" "sass4clj.main" "--auto" "--target-path" "resources/public" "--source-paths"
                               "resources/scss"]},
-           :test {:extra-deps {org.clojure/test.check {:mvn/version "1.0.0"}}, :extra-paths ["test"]}},
+           :test {:extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}, :extra-paths ["test"]}},
  :deps {com.cemerick/url {:mvn/version "0.1.1"},
         com.taoensso/timbre {:mvn/version "5.1.2"},
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"},
