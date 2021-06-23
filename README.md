@@ -38,13 +38,16 @@ The star of the show! Here is the structural overview of the Clojure code:
 .
 |- deps.edn (Clojure tooling headquarters, declare dependencies and useful aliases)
 |- bb.edn (Babashka headquarters, used to run scripts for REPL, Sass, and Postgres tasks)
-|- src/codes/stel/functional-news
+|- dev
+   |- user.clj (Code that executes at the beginning of a REPL session when developing)
+|- src/codes/stel/functional_news
    |- handler.clj (Reitit router location, and all of the router's handlers)
    |- state.clj (Using next.jdbc, interact with Postgres and get/update the current app state)
    |- views.clj (Using hiccup, create html responses to be consumed by the handlers)
    |- util.clj (General functions go here to be used by all other namespaces)
-|- dev
-   |- user.clj (Code that executes at the beginning of a REPL session when developing)
+|- test/codes/stel/functional_news
+   |- state_test.clj (Some tests for the state)
+   |- handler_test.clj (Some tests for the handlers)
 ```
 
 ### SCSS
@@ -54,7 +57,9 @@ Making things pretty! Here is the structural overview of the SCSS code:
 |- resources
    |- scss
       |- main.scss (Monolithic stylesheet for all app styling)
-      |- reset.scss (A browser styling reset from the css wizard @jgthms)
+      |- _minireset.scss (A browser styling reset from the css wizard @jgthms)
+   |- public/assets/css
+      |- main.css (Compiled SCSS, ready to be served to the browser)
    |- svg
       |- love.svg (A simple heart SVG from feather icon used for the upvote button)
 ```
@@ -65,7 +70,7 @@ Abolish the state! Wait no not that state! Here is the structural overview of th
 .
 |- resources
    |- sql
-      |- schema.sql (The SQL used to initialize the necessary tables in the PostgreSQL database)
+      |- schema.sql (The SQL used to initialize the necessary tables in the PostgreSQL database, as well as initialize functions used for the "hot" algorithm)
 ```
 
 By Stel Abrego 2021
