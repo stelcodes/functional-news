@@ -29,7 +29,7 @@
   ([] (nav nil))
   ([user]
    [:nav
-    (unordered-list [(he/link-to "/" "hot") (he/link-to "/new" "new") nil nil (he/link-to "/submit" "submit")
+    (unordered-list [(he/link-to "/" "hot") (he/link-to "/new" "new") (he/link-to "/submit" "submit")
                      (if user (he/link-to "/logout" "logout") (he/link-to "/login" "login"))])]))
 
 (defn header
