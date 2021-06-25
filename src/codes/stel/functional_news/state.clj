@@ -2,11 +2,13 @@
   (:require [next.jdbc.sql :refer [query]]
             [next.jdbc :refer [get-datasource execute! execute-one!]]
             [taoensso.timbre :refer [log warn error]]
-            [codes.stel.functional-news.util :refer [generate-username]]))
+            [codes.stel.functional-news.util :refer [generate-username]]
+            [codes.stel.functional-news.config :refer [config]]))
 
-(def datasource
-  (get-datasource
-    {:dbtype "postgresql", :dbname "functional_news", :user "functional_news_app", :host "127.0.0.1", :port 5432}))
+(def datasource (get-datasource (config :db-spec)))
+
+(comment
+  (config :db-spec))
 
 (defn ex-empty-result
   ([] (ex-empty-result {}))

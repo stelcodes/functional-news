@@ -5,23 +5,29 @@
             [hiccup.form :as hf]
             [clojure.java.io :as io]
             [taoensso.timbre :refer [spy debug log warn error]]
+            [codes.stel.functional-news.config :refer [config]]
             [cemerick.url :as cu]))
 
-(defn layout
+(defn render-page
   [title & content]
-  (-> (html {:lang "en", :mode :html}
-            [:head [:title title] [:meta {:charset "utf-8"}] [:meta {:http-equiv "X-UA-Compatible", :content "IE=edge"}]
-             [:meta {:name "viewport", :content "width=device-width, initial-scale=1.0"}]
-             [:link {:rel "shortcut icon", :href "/assets/favicon.ico", :type "image/x-icon"}]
-             (hp/include-css "/assets/css/main.css")
-             (when (= (System/getenv "PROD") "true")
-               [:script
-                {:src "https://plausible.io/js/plausible.js",
-                 :data-domain "functional-news.stel.codes",
-                 :defer "defer",
-                 :async "async"}])]
-            [:body content])
-      (str)))
+  (->
+    (html {:lang "en", :mode :html}
+          [:html
+           [:head [:title title] [:meta {:charset "utf-8"}] [:meta {:http-equiv "X-UA-Compatible", :content "IE=edge"}]
+            [:meta {:name "viewport", :content "width=device-width, initial-scale=1.0"}]
+            [:link {:href "/assets/favicons/apple-touch-icon.png", :sizes "76x76", :rel "apple-touch-icon"}]
+            [:link {:href "/assets/favicons/favicon-32x32.png", :sizes "32x32", :type "image/png", :rel "icon"}]
+            [:link {:href "/assets/favicons/favicon-16x16.png", :sizes "16x16", :type "image/png", :rel "icon"}]
+            [:link {:href "/assets/favicons/site.webmanifest", :rel "manifest"}]
+            [:link {:color "#5bbad5", :href "/assets/favicons/safari-pinned-tab.svg", :rel "mask-icon"}]
+            [:link {:href "/assets/favicons/favicon.ico", :rel "shortcut icon"}]
+            [:meta {:content "#da532c", :name "msapplication-TileColor"}]
+            [:meta {:content "/assets/favicons/browserconfig.xml", :name "msapplication-config"}]
+            [:meta {:content "#ffffff", :name "theme-color"}] (hp/include-css "/assets/css/main.css")
+            (when (config :prod)
+              [:script {:src "https://plausible.io/js/plausible.js", :data-domain (config :domain), :defer "defer"}])]]
+          [:body content])
+    (str)))
 
 (defn unordered-list [coll] [:ul (for [x (remove nil? coll)] [:li x])])
 
@@ -105,7 +111,7 @@
         username (:users/name submission)
         age (:age submission)
         upvotecount (:upvotecount submission)]
-    (layout (str title " | λn")
+    (render-page (str title " | λn")
             (header user)
             [:main
              [:div.submission-body (upvote-panel id upvotecount)
@@ -120,7 +126,7 @@
 
 (defn submission-list
   [user submissions]
-  (layout "Submissions | λn"
+  (render-page "Submissions | λn"
           (header user)
           [:main [:div.submission-list (map submission-list-item submissions)]]
           (footer)))
@@ -131,7 +137,7 @@
   ([error]
    (let [login-error (:login error)
          signup-error (:signup error)]
-     (layout "Login | λn"
+     (render-page "Login | λn"
              (header)
              [:main [:p.form-message "Log in to submit links, comment, and upvote!"]
               (when login-error (list [:br] [:p.form-error "⛔ " login-error]))
@@ -155,7 +161,7 @@
 
 (defn submit-page
   [user error]
-  (layout
+  (render-page
     "Submit | λn"
     (header user)
     [:main (when error [:p.form-error "⛔ " error])
@@ -173,7 +179,7 @@
 (defn not-found
   ([] (not-found nil))
   ([user]
-   (layout "404 | λn"
+   (render-page "404 | λn"
            (header user)
            [:main
             [:div.error-page-message [:h1 "404"]

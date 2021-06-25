@@ -9,6 +9,7 @@
             [codes.stel.functional-news.views :as views]
             [codes.stel.functional-news.state :as state]
             [codes.stel.functional-news.util :refer [validate-url validate-email validate-password pp]]
+            [codes.stel.functional-news.config :refer [config]]
             [ring.middleware.session :refer [session-request session-response]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [reitit.http.interceptors.muuntaja :refer [format-interceptor]]
@@ -111,14 +112,13 @@
          (debug "Signup Handler Exception - " e)
          (bad-request (views/login-page {:signup (.getMessage e)})))))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interceptors
 
 (def session-interceptor
-  (let [cookie-key (.getBytes (or (System/getenv "COOKIE_KEY") "abcdefghijklmnop"))
-        options {:store (cookie-store {:key cookie-key}), :cookie-name "functional-news-cookie"}]
+  (let [cookie-key (.getBytes (config :cookie-key))
+        cookie-name (config :cookie-name)
+        options {:store (cookie-store {:key cookie-key}), :cookie-name cookie-name}]
     {:enter (fn [{:keys [request], :as context}]
               (let [new-request (session-request request options)
                     user-id (get-in new-request [:session :id])
@@ -150,6 +150,8 @@
               :error nil
               :response (error-page-handler request)))})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reitit App
 
 (def app-routes
   [["/" {:handler hot-submissions-page-handler}]
@@ -173,12 +175,8 @@
             :name ::create-comment,
             :parameters {:form [:map [:submission-id int?] [:body string?]]}}}]])
 
-(comment
-  (string? "hi"))
-
 (def router-options
   {:validate rspec/validate, :exception pretty/exception, :data {:coercion reitit.coercion.malli/coercion}})
-
 
 (def app
   (http/ring-handler (http/router app-routes router-options)
@@ -190,5 +188,4 @@
                                      (multipart-interceptor) session-interceptor (coerce-request-interceptor)
                                      debug-interceptor (coerce-response-interceptor) #_(coerce-exceptions-interceptor)],
                       :executor sieppari/executor}))
-
 
