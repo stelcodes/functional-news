@@ -5,7 +5,8 @@
 
 (defn pp [val] (with-out-str (pprint val)))
 
-(comment (pp {:this "is" :a 'test :ok? 734}))
+(comment
+  (pp {:this "is", :a 'test, :ok? 734}))
 
 (def functional-jargon-adjectives
   ["dynamic" "currying" "categorical" "isomorphic" "homoiconic" "declaritive" "dataDriven" "endomorphic" "algebraic"

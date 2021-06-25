@@ -2,6 +2,9 @@
   (:require [clojure.test :refer :all]
             [codes.stel.functional-news.handler :as handler]))
 
+(comment
+  (run-tests))
+
 (deftest hot-submissions-page-handler
   (let [response (handler/hot-submissions-page-handler {})]
     (testing "Do we get a map back" (is (map? response)))
@@ -17,5 +20,3 @@
     (testing "Do we get a map back" (is (map? response)))
     (testing "Do we get a 200 status" (is (= 200 (:status response))))))
 
-(comment
-  (run-tests))
