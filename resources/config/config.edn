@@ -1,0 +1,5 @@
+{:cookie-key "abcdefghijklmnop",
+ :cookie-name "functional-news-cookie",
+ :db-spec {:dbname "functional_news", :dbtype "postgresql", :host "127.0.0.1", :port 5432, :user "functional_news_app"},
+ :domain "functionalnews.stel.codes",
+ :prod false}
