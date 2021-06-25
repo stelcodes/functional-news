@@ -6,7 +6,8 @@
 (comment
   (run-tests))
 
-(def valid-submission? (m/validator [:map [:submissions/id int?] [:submissions/title string?] [:submissions/url string?]]))
+(def valid-submission?
+  (m/validator [:map [:submissions/id int?] [:submissions/title string?] [:submissions/url string?]]))
 
 (deftest find-user
   (testing "An invalid id will throw error" (is (thrown? clojure.lang.ExceptionInfo (state/find-user 2343242034))))
