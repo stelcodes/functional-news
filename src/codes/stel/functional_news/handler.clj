@@ -8,7 +8,7 @@
             [ring.util.response :refer [redirect bad-request]]
             [codes.stel.functional-news.views :as views]
             [codes.stel.functional-news.state :as state]
-            [codes.stel.functional-news.util :refer [validate-url]]
+            [codes.stel.functional-news.util :refer [validate-url validate-email validate-password pp]]
             [ring.middleware.session :refer [session-request session-response]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [reitit.http.interceptors.muuntaja :refer [format-interceptor]]
@@ -16,7 +16,6 @@
             [reitit.http.interceptors.multipart :refer [multipart-interceptor]]
             [reitit.spec :as rspec]
             [reitit.dev.pretty :as pretty]
-            [clojure.pprint :refer [pprint]]
             [reitit.interceptor.sieppari :as sieppari]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -99,17 +98,6 @@
            (redirect location :see-other))
          (catch Exception _ (redirect "/" :see-other)))))
 
-(defn validate-email
-  [email]
-  (if (re-matches #".+\@.+\..+" email)
-    email
-    (throw (ex-info "Email address must have @ and . characters" {:email email}))))
-
-(defn validate-password
-  [password]
-  (let [length (count password)]
-    (if (> length 7) password (throw (ex-info "Password must be 8 characters or more" {})))))
-
 (defn signup-handler
   [request]
   (try (let [email (get-in request [:parameters :form :email])
@@ -124,7 +112,6 @@
          (bad-request (views/login-page {:signup (.getMessage e)})))))
 
 
-(defn pp [val] (with-out-str (pprint val)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interceptors
@@ -152,7 +139,7 @@
                     sorted-request (into (sorted-map) filtered-request)]
                 (debug "\n================================================"
                        "\n🐞 REQUEST INTERCEPTOR\n"
-                       (with-out-str (pprint sorted-request))
+                       (pp sorted-request)
                        "================================================")))
             context)})
 
