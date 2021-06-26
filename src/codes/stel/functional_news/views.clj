@@ -112,24 +112,24 @@
         age (:age submission)
         upvotecount (:upvotecount submission)]
     (render-page (str title " | λn")
-            (header user)
-            [:main
-             [:div.submission-body (upvote-panel id upvotecount)
-              [:div.submission-header (he/link-to {:class "submission-title", :target "_blank"} url title)
-               [:p.submission-host host] [:p (str "by " username " " (created-string age))]]
-              (hf/form-to [:post "/comments"]
-                          (hf/hidden-field "submission-id" id)
-                          (hf/text-area {:cols 100, :rows 10} "body")
-                          (hf/submit-button {:class "submit-button"} "add comment"))
-              [:div.submission-comments (map comment-item comments)]]]
-            (footer))))
+                 (header user)
+                 [:main
+                  [:div.submission-body (upvote-panel id upvotecount)
+                   [:div.submission-header (he/link-to {:class "submission-title", :target "_blank"} url title)
+                    [:p.submission-host host] [:p (str "by " username " " (created-string age))]]
+                   (hf/form-to [:post "/comments"]
+                               (hf/hidden-field "submission-id" id)
+                               (hf/text-area {:cols 100, :rows 10} "body")
+                               (hf/submit-button {:class "submit-button"} "add comment"))
+                   [:div.submission-comments (map comment-item comments)]]]
+                 (footer))))
 
 (defn submission-list
   [user submissions]
   (render-page "Submissions | λn"
-          (header user)
-          [:main [:div.submission-list (map submission-list-item submissions)]]
-          (footer)))
+               (header user)
+               [:main [:div.submission-list (map submission-list-item submissions)]]
+               (footer)))
 
 (defn login-page
   "error is a map with optional :login and :signup keys"
@@ -138,26 +138,26 @@
    (let [login-error (:login error)
          signup-error (:signup error)]
      (render-page "Login | λn"
-             (header)
-             [:main [:p.form-message "Log in to submit links, comment, and upvote!"]
-              (when login-error (list [:br] [:p.form-error "⛔ " login-error]))
-              (hf/form-to {:class "login-form"}
-                          [:post "/login"]
-                          (hf/label "email" "email")
-                          (hf/email-field "email")
-                          (hf/label "password" "password")
-                          (hf/password-field "password")
-                          (hf/submit-button {:class "submit-button"} "login"))
-              [:p.form-message "Signup here! Password must be > 8 characters"]
-              (when signup-error (list [:br] [:p.form-error "⛔ " signup-error]))
-              (hf/form-to {:class "signup-form"}
-                          [:post "/signup"]
-                          (hf/label "email" "email")
-                          (hf/email-field "email")
-                          (hf/label "password" "password")
-                          (hf/password-field "password")
-                          (hf/submit-button {:class "submit-button"} "signup"))]
-             (footer)))))
+                  (header)
+                  [:main [:p.form-message "Log in to submit links, comment, and upvote!"]
+                   (when login-error (list [:br] [:p.form-error "⛔ " login-error]))
+                   (hf/form-to {:class "login-form"}
+                               [:post "/login"]
+                               (hf/label "email" "email")
+                               (hf/email-field "email")
+                               (hf/label "password" "password")
+                               (hf/password-field "password")
+                               (hf/submit-button {:class "submit-button"} "login"))
+                   [:p.form-message "Signup here! Password must be > 8 characters"]
+                   (when signup-error (list [:br] [:p.form-error "⛔ " signup-error]))
+                   (hf/form-to {:class "signup-form"}
+                               [:post "/signup"]
+                               (hf/label "email" "email")
+                               (hf/email-field "email")
+                               (hf/label "password" "password")
+                               (hf/password-field "password")
+                               (hf/submit-button {:class "submit-button"} "signup"))]
+                  (footer)))))
 
 (defn submit-page
   [user error]
@@ -180,8 +180,8 @@
   ([] (not-found nil))
   ([user]
    (render-page "404 | λn"
-           (header user)
-           [:main
-            [:div.error-page-message [:h1 "404"]
-             [:p "Something went wrong. Please check the URL and try again. Sorry about that!"]]]
-           (footer))))
+                (header user)
+                [:main
+                 [:div.error-page-message [:h1 "404"]
+                  [:p "Something went wrong. Please check the URL and try again. Sorry about that!"]]]
+                (footer))))
