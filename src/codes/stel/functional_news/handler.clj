@@ -116,8 +116,8 @@
 ;; Interceptors
 
 (def session-interceptor
-  (let [cookie-key (.getBytes (config :cookie-key))
-        cookie-name (config :cookie-name)
+  (let [cookie-key (.getBytes (get-in config [:cookie :key]))
+        cookie-name (get-in config [:cookie :name])
         options {:store (cookie-store {:key cookie-key}), :cookie-name cookie-name}]
     {:enter (fn [{:keys [request], :as context}]
               (let [new-request (session-request request options)

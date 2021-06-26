@@ -1,5 +1,14 @@
-{:cookie-key "abcdefghijklmnop",
- :cookie-name "functional-news-cookie",
- :db-spec {:dbname "functional_news", :dbtype "postgresql", :host "127.0.0.1", :port 5432, :user "functional_news_app"},
+{:cookie {:key "abcdefghijklmnop", :name "functional-news-cookie"},
+ :db-spec {:dbname "functional_news",
+           :dbtype "postgresql",
+           :host "127.0.0.1",
+           :port 5432,
+           ;; username for hikari, user for standard connection
+           :username "functional_news_app"},
  :domain "functionalnews.stel.codes",
+ :http {:port 38628},
  :prod false}
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Example production environment starting command:
+;; env -i PROD=true COOKIE__KEY=".16characterkey." java -jar codes.stel.functional-news
