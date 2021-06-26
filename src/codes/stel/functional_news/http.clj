@@ -2,7 +2,7 @@
   (:require [org.httpkit.server :refer [run-server]]
             [codes.stel.functional-news.handler :refer [app]]
             [codes.stel.functional-news.config :refer [config]]
-            [taoensso.timbre :as timbre :refer [info warn]]))
+            [taoensso.timbre :as timbre :refer [info]]))
 
 (defn start-server
   []

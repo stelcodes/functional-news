@@ -4,7 +4,6 @@
             [hiccup.element :as he]
             [hiccup.form :as hf]
             [clojure.java.io :as io]
-            [taoensso.timbre :refer [spy debug log warn error]]
             [codes.stel.functional-news.config :refer [config]]
             [cemerick.url :as cu]))
 

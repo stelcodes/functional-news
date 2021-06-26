@@ -1,9 +1,9 @@
 (ns codes.stel.functional-news.state
   (:require [next.jdbc.sql :refer [query]]
-            [next.jdbc :refer [get-datasource execute! execute-one!]]
-            [codes.stel.functional-news.config :refer [config]]
-            [taoensso.timbre :refer [log warn error]]
+            [next.jdbc :refer [execute! execute-one!]]
             [next.jdbc.connection :refer [->pool]]
+            [taoensso.timbre :refer [error]]
+            [codes.stel.functional-news.config :refer [config]]
             [codes.stel.functional-news.util :refer [generate-username]])
   (:import (com.zaxxer.hikari HikariDataSource)))
 

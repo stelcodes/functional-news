@@ -1,9 +1,9 @@
 (ns codes.stel.functional-news.handler
   (:require [reitit.ring :refer [create-resource-handler routes redirect-trailing-slash-handler create-default-handler]]
             [reitit.http :as http]
-            [taoensso.timbre :refer [spy debug log warn error]]
+            [taoensso.timbre :refer [debug]]
             [reitit.http.coercion :refer
-             [coerce-request-interceptor coerce-response-interceptor coerce-exceptions-interceptor]]
+             [coerce-request-interceptor coerce-response-interceptor]]
             [reitit.coercion.malli]
             [ring.util.response :refer [redirect bad-request]]
             [codes.stel.functional-news.views :as views]
