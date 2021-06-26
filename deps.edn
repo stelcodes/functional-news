@@ -21,6 +21,7 @@
            :test {:extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}, :extra-paths ["test"]}},
  :deps {com.cemerick/url {:mvn/version "0.1.1"},
         com.taoensso/timbre {:mvn/version "5.1.2"},
+        com.zaxxer/HikariCP {:mvn/version "4.0.3"},
         cprop/cprop {:mvn/version "0.1.18"},
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"},
         http-kit/http-kit {:mvn/version "2.5.3"},

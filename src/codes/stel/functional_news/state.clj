@@ -1,14 +1,13 @@
 (ns codes.stel.functional-news.state
   (:require [next.jdbc.sql :refer [query]]
             [next.jdbc :refer [get-datasource execute! execute-one!]]
+            [codes.stel.functional-news.config :refer [config]]
             [taoensso.timbre :refer [log warn error]]
-            [codes.stel.functional-news.util :refer [generate-username]]
-            [codes.stel.functional-news.config :refer [config]]))
+            [next.jdbc.connection :refer [->pool]]
+            [codes.stel.functional-news.util :refer [generate-username]])
+  (:import (com.zaxxer.hikari HikariDataSource)))
 
-(def datasource (get-datasource (config :db-spec)))
-
-(comment
-  (config :db-spec))
+(def datasource (->pool HikariDataSource (config :db-spec)))
 
 (defn ex-empty-result
   ([] (ex-empty-result {}))
@@ -22,7 +21,7 @@
        ;; https://mariapaktiti.com/handling-postgres-exceptions-with-clojure
        (catch java.sql.SQLException e (throw (ex-info "Cannot run SQL command" {:type :state/sql-exception} e)))
        (catch Exception e
-         ((error "Cannot connect to database!")
+         ((error e "Cannot connect to database!")
            (throw (ex-info "Cannot connect to database" {:type :state/db-connection} e))))))
 
 (defn find-user
