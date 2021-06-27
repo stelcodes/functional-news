@@ -18,6 +18,7 @@
            :scss {:extra-deps {deraen/sass4clj {:mvn/version "0.5.1"}},
                   :main-opts ["-m" "sass4clj.main" "--auto" "--target-path" "resources/public" "--source-paths"
                               "resources/scss"]},
+           :start {:exec-fn codes.stel.functional-news.core/-main},
            :test {:extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}, :extra-paths ["test"]}},
  :deps {com.cemerick/url {:mvn/version "0.1.1"},
         com.taoensso/timbre {:mvn/version "5.1.2"},
