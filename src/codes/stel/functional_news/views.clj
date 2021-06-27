@@ -96,10 +96,10 @@
   []
   [:footer (he/image {:class "avatar"} "https://s3.stel.codes/avatar.png")
    [:div.self-promotion [:p.introduction "Hi! I'm Stel Abrego, and I created this web app: λn (functional news)"]
-    [:p.explanation "Thanks for checking it out! I used Clojure, SCSS, Postgres, and NixOS"]
-    [:p "My developer blog + resume 👉 " (he/link-to "https://stel.codes" "stel.codes")]
-    [:p "My thought stream 👉 " (he/link-to "https://twitter.com/stelstuff" "twitter.com/stelstuff")]
-    [:p "My open source projects 👉 " (he/link-to "https://github.com/stelcodes" "github.com/stelcodes")]]])
+    [:p.explanation "Thanks for checking it out! I used Clojure, SCSS, Postgres, and NixOS"] [:p ""]
+    [:ul.social [:li "🧑‍💻 " (he/link-to "https://stel.codes" "stel.codes")]
+     [:li "🐦 " (he/link-to "https://twitter.com/stelstuff" "twitter.com/stelstuff")]
+     [:li "🐙 " (he/link-to "https://github.com/stelcodes" "github.com/stelcodes")]]]])
 
 (defn submission-page
   [user submission comments]
