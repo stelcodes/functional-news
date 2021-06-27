@@ -5,11 +5,11 @@
 {:min-bb-version "0.4.0",
  :tasks {; CONSTANTS
          db-name "functional_news",
-         backup-dir "backups",
+         backup-dir "local",
          now (str (java.time.LocalDateTime/now)),
          ; PURE FUNCTIONS
          backup-path {:depends [db-name backup-dir now], :task (str backup-dir "/" db-name "_backup:" now ".sql")},
-         backup-command {:depends [db-name], :task (str "pg_dump --create " db-name)},
+         backup-command {:depends [db-name], :task (str "pg_dump " db-name)},
          ; IMPURE FUNCTIONS
          create-backup-dir {:depends [backup-dir], :task (babashka.fs/create-dirs backup-dir)},
          backup {:depends [db-name backup-path backup-command create-backup-dir],
