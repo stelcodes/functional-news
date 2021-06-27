@@ -92,9 +92,10 @@ body {
     grid-template-areas:
     "logo nav username";
     @media (max-width: 600px) {
-    grid-template-areas:
-    "logo nav nav"
-    "logo username username";
+      grid-template-areas:
+      "logo nav ."
+      ". username .";
+      grid-template-rows: max-content min-content;
     }
     grid-template-columns: max-content 1fr max-content;
     align-items: center;
@@ -150,10 +151,17 @@ body {
     // align-items: center;
     padding: 1rem 1rem;
     font-size: 0.9rem;
+    @media (max-width: 600px) {
+      grid-auto-flow: column;
+      grid-template-columns: 1fr;
+      grid-template-rows: max-content 1fr;
+      justify-items: center;
+    }
     .avatar {
       display: inline-block;
       width: 100px;
       border-radius: 10%;
+      margin-bottom: 1rem;
     }
     .self-promotion {
       display: inline-block;
@@ -163,7 +171,17 @@ body {
         padding-bottom: 0.5rem;
       }
       .explanation {
-        padding-bottom: .3rem;
+        // padding-bottom: .3rem;
+      }
+      ul.social {
+        display: inline-block;
+        border-top: 1px solid lightgrey;
+        margin-top: 1rem;
+        padding-top: 0.5rem;
+      }
+      ul.social li {
+        display: inline-block;
+        padding-right: 1.2rem;
       }
     }
   }

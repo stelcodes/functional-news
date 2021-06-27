@@ -180,7 +180,8 @@ body header {
 }
 @media (max-width: 600px) {
   body header {
-    grid-template-areas: "logo nav nav" "logo username username";
+    grid-template-areas: "logo nav ." ". username .";
+    grid-template-rows: max-content min-content;
   }
 }
 body header * {
@@ -226,10 +227,19 @@ body footer {
   padding: 1rem 1rem;
   font-size: 0.9rem;
 }
+@media (max-width: 600px) {
+  body footer {
+    grid-auto-flow: column;
+    grid-template-columns: 1fr;
+    grid-template-rows: max-content 1fr;
+    justify-items: center;
+  }
+}
 body footer .avatar {
   display: inline-block;
   width: 100px;
   border-radius: 10%;
+  margin-bottom: 1rem;
 }
 body footer .self-promotion {
   display: inline-block;
@@ -239,8 +249,15 @@ body footer .self-promotion .introduction {
   font-weight: 600;
   padding-bottom: 0.5rem;
 }
-body footer .self-promotion .explanation {
-  padding-bottom: 0.3rem;
+body footer .self-promotion ul.social {
+  display: inline-block;
+  border-top: 1px solid lightgrey;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+}
+body footer .self-promotion ul.social li {
+  display: inline-block;
+  padding-right: 1.2rem;
 }
 
 .submission-list {
