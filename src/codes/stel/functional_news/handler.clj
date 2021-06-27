@@ -1,7 +1,7 @@
 (ns codes.stel.functional-news.handler
   (:require [reitit.ring :refer [create-resource-handler routes redirect-trailing-slash-handler create-default-handler]]
             [reitit.http :as http]
-            [taoensso.timbre :refer [debug]]
+            [taoensso.timbre :refer [info debug]]
             [reitit.http.coercion :refer [coerce-request-interceptor coerce-response-interceptor]]
             [reitit.coercion.malli]
             [ring.util.response :refer [redirect bad-request]]
@@ -9,6 +9,7 @@
             [codes.stel.functional-news.state :as state]
             [codes.stel.functional-news.util :refer [validate-url validate-email validate-password pp]]
             [codes.stel.functional-news.config :refer [config]]
+            [clojure.string :as str]
             [ring.middleware.session :refer [session-request session-response]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [reitit.http.interceptors.muuntaja :refer [format-interceptor]]
@@ -127,9 +128,18 @@
      :leave (fn [{:keys [response request], :as context}]
               (assoc context :response (session-response response request options)))}))
 
+(def log-info-interceptor
+  {:leave (fn [{:keys [request response], :as context}]
+            (let [method-str (-> request
+                                 (:request-method)
+                                 (name)
+                                 (str)
+                                 (str/upper-case))]
+              (info "\n📫" method-str (:status response) (:uri request))
+              context))})
+
 (def debug-interceptor
   {:enter (fn [{:keys [request], :as context}]
-            (debug "\n📫" (str (:request-method request)) (:uri request))
             (when-not (re-find #"^.*\.(jpg|png|gif|svg|ico|css|js)$" (:uri request))
               (let [keep-keys [:session :request-method :headers :scheme :user :body :path-params :query-string
                                :server-name :uri :character-encoding :content-type :query-params :websocket?
@@ -178,13 +188,14 @@
   {:validate rspec/validate, :exception pretty/exception, :data {:coercion reitit.coercion.malli/coercion}})
 
 (def app
-  (http/ring-handler (http/router app-routes router-options)
-                     (routes (redirect-trailing-slash-handler)
-                             (create-default-handler {:not-found error-page-handler,
-                                                      :method-not-allowed error-page-handler,
-                                                      :not-acceptable error-page-handler}))
-                     {:interceptors [error-interceptor (format-interceptor) (parameters-interceptor)
-                                     (multipart-interceptor) session-interceptor (coerce-request-interceptor)
-                                     debug-interceptor (coerce-response-interceptor) #_(coerce-exceptions-interceptor)],
-                      :executor sieppari/executor}))
+  (http/ring-handler
+    (http/router app-routes router-options)
+    (routes (redirect-trailing-slash-handler)
+            (create-default-handler {:not-found error-page-handler,
+                                     :method-not-allowed error-page-handler,
+                                     :not-acceptable error-page-handler}))
+    {:interceptors [error-interceptor log-info-interceptor (format-interceptor) (parameters-interceptor)
+                    (multipart-interceptor) session-interceptor (coerce-request-interceptor)
+                    (when-not (config :prod) debug-interceptor) (coerce-response-interceptor)],
+     :executor sieppari/executor}))
 
