@@ -92,9 +92,11 @@
   [:div.comment-item [:p.comment-header (str (:users/name comment) " " (created-string (:age comment)))]
    [:p (:comments/body comment)]])
 
+(def avatar-uri "https://user-images.githubusercontent.com/22163194/164172131-9086a741-caa7-4811-b5b0-96e3d0f93b7f.png")
+
 (defn footer
   []
-  [:footer (he/image {:class "avatar"} "https://s3.stel.codes/avatar.png")
+  [:footer (he/image {:class "avatar"} avatar-uri)
    [:div.self-promotion [:p.introduction "Hi! I'm Stel Abrego, and I created this web app: λn (functional news)"]
     [:p.explanation "Thanks for checking it out! I used Clojure, SCSS, Postgres, and NixOS"] [:p ""]
     [:ul.social [:li "🧑‍💻 " (he/link-to "https://stel.codes" "stel.codes")]
